@@ -1,1 +1,242 @@
+import asyncio, html, os, sqlite3
+from datetime import date, datetime, timedelta
 
+from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties
+from aiogram.filters import Command, CommandObject, CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, InlineKeyboardButton as B, InlineKeyboardMarkup, Message
+
+TOKEN = os.getenv("BOT_TOKEN")  # токен от @BotFather
+MOODS = ["😞", "😕", "😐", "🙂", "😄"]
+DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+
+# ---------- база ----------
+db = sqlite3.connect("tracker.db")
+db.row_factory = sqlite3.Row
+db.executescript("""
+CREATE TABLE IF NOT EXISTS users(uid INTEGER PRIMARY KEY, name TEXT, remind TEXT);
+CREATE TABLE IF NOT EXISTS habits(id INTEGER PRIMARY KEY AUTOINCREMENT, uid INTEGER, name TEXT);
+CREATE TABLE IF NOT EXISTS log(hid INTEGER, d TEXT, PRIMARY KEY(hid, d));
+CREATE TABLE IF NOT EXISTS mood(uid INTEGER, d TEXT, v INTEGER, PRIMARY KEY(uid, d));
+CREATE TABLE IF NOT EXISTS friends(a INTEGER, b INTEGER, PRIMARY KEY(a, b));
+""")
+
+def q(sql, *a):
+    return db.execute(sql, a).fetchall()
+
+def ex(sql, *a):
+    db.execute(sql, a)
+    db.commit()
+
+def habits(uid):
+    return q("SELECT * FROM habits WHERE uid=? ORDER BY id", uid)
+
+def done(hid, d):
+    return bool(q("SELECT 1 FROM log WHERE hid=? AND d=?", hid, str(d)))
+
+def streak(hid):
+    d = date.today()
+    if not done(hid, d):
+        d -= timedelta(days=1)
+    n = 0
+    while done(hid, d):
+        n += 1
+        d -= timedelta(days=1)
+    return n
+
+# ---------- клавиатуры ----------
+def menu_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [B(text="📅 Сегодня", callback_data=f"d:{date.today()}"), B(text="➕ Добавить", callback_data="add")],
+        [B(text="📊 Статистика", callback_data="stats"), B(text="📋 Неделя", callback_data="week")],
+        [B(text="😊 Настроение", callback_data="mood"), B(text="🗑 Удалить", callback_data="del")],
+    ])
+
+def today_view(uid, d: date):
+    hs = habits(uid)
+    title = "Сегодня" if d == date.today() else d.strftime("%d.%m.%Y")
+    if not hs:
+        return f"<b>{title}</b>\n\nПривычек пока нет. Нажмите «➕ Добавить».", menu_kb()
+    rows = [[B(text=("✅ " if done(h["id"], d) else "⬜ ") + h["name"],
+               callback_data=f"t:{h['id']}:{d}")] for h in hs]
+    rows.append([B(text="◀", callback_data=f"d:{d - timedelta(days=1)}"),
+                 B(text=DAYS[d.weekday()], callback_data=f"d:{date.today()}"),
+                 B(text="▶", callback_data=f"d:{d + timedelta(days=1)}")])
+    rows.append([B(text="🏠 Меню", callback_data="menu")])
+    n = sum(done(h["id"], d) for h in hs)
+    return f"<b>{title}</b>: {n}/{len(hs)}", InlineKeyboardMarkup(inline_keyboard=rows)
+
+# ---------- бот ----------
+dp = Dispatcher()
+
+class Add(StatesGroup):
+    name = State()
+
+@dp.message(CommandStart())
+async def start(m: Message, command: CommandObject, bot: Bot):
+    uid = m.from_user.id
+    ex("INSERT OR IGNORE INTO users(uid,name) VALUES(?,?)", uid, m.from_user.first_name)
+    ref = command.args or ""
+    if ref.startswith("ref_") and ref[4:].isdigit() and int(ref[4:]) != uid:
+        fid = int(ref[4:])
+        ex("INSERT OR IGNORE INTO friends VALUES(?,?)", uid, fid)
+        ex("INSERT OR IGNORE INTO friends VALUES(?,?)", fid, uid)
+        await m.answer("Вы теперь друзья 🤝")
+        try:
+            await bot.send_message(fid, f"{html.escape(m.from_user.first_name)} добавился в друзья 🤝")
+        except Exception:
+            pass
+    await m.answer("Привет! Я помогу выработать привычки.", reply_markup=menu_kb())
+
+@dp.callback_query(F.data == "menu")
+async def menu(c: CallbackQuery):
+    await c.message.edit_text("Меню", reply_markup=menu_kb())
+
+@dp.callback_query(F.data.startswith("d:"))
+async def day(c: CallbackQuery):
+    text, kb = today_view(c.from_user.id, date.fromisoformat(c.data[2:]))
+    await c.message.edit_text(text, reply_markup=kb)
+
+@dp.callback_query(F.data.startswith("t:"))
+async def toggle(c: CallbackQuery):
+    _, hid, d = c.data.split(":")
+    hid = int(hid)
+    if not q("SELECT 1 FROM habits WHERE id=? AND uid=?", hid, c.from_user.id):
+        return await c.answer()
+    if done(hid, d):
+        ex("DELETE FROM log WHERE hid=? AND d=?", hid, d)
+    else:
+        ex("INSERT INTO log VALUES(?,?)", hid, d)
+    text, kb = today_view(c.from_user.id, date.fromisoformat(d))
+    await c.message.edit_text(text, reply_markup=kb)
+    await c.answer()
+
+@dp.callback_query(F.data == "add")
+async def add_start(c: CallbackQuery, state: FSMContext):
+    await state.set_state(Add.name)
+    await c.message.answer("Напишите название привычки, например: 🏃 Бег")
+    await c.answer()
+
+@dp.message(Add.name)
+async def add_name(m: Message, state: FSMContext):
+    name = (m.text or "").strip()[:40]
+    if not name:
+        return await m.answer("Нужен текст. Попробуйте ещё раз.")
+    ex("INSERT INTO habits(uid,name) VALUES(?,?)", m.from_user.id, name)
+    await state.clear()
+    text, kb = today_view(m.from_user.id, date.today())
+    await m.answer(f"Добавлено: {html.escape(name)}\n\n{text}", reply_markup=kb)
+
+@dp.callback_query(F.data == "del")
+async def del_list(c: CallbackQuery):
+    hs = habits(c.from_user.id)
+    rows = [[B(text=f"🗑 {h['name']}", callback_data=f"rm:{h['id']}")] for h in hs]
+    rows.append([B(text="🏠 Меню", callback_data="menu")])
+    await c.message.edit_text("Что удалить?" if hs else "Удалять нечего.",
+                              reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
+
+@dp.callback_query(F.data.startswith("rm:"))
+async def remove(c: CallbackQuery):
+    hid = int(c.data[3:])
+    if q("SELECT 1 FROM habits WHERE id=? AND uid=?", hid, c.from_user.id):
+        ex("DELETE FROM habits WHERE id=?", hid)
+        ex("DELETE FROM log WHERE hid=?", hid)
+    await del_list(c)
+
+@dp.callback_query(F.data == "stats")
+async def stats(c: CallbackQuery):
+    hs = habits(c.from_user.id)
+    if not hs:
+        return await c.answer("Сначала добавьте привычку", show_alert=True)
+    lines = ["<b>Статистика (30 дней)</b>\n"]
+    for h in hs:
+        n = sum(done(h["id"], date.today() - timedelta(days=i)) for i in range(30))
+        lines.append(f"{html.escape(h['name'])}\n🔥 серия {streak(h['id'])} · {round(n / 30 * 100)}%")
+    await c.message.edit_text("\n\n".join(lines), reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[[B(text="🏠 Меню", callback_data="menu")]]))
+
+@dp.callback_query(F.data == "week")
+async def week(c: CallbackQuery):
+    uid = c.from_user.id
+    mon = date.today() - timedelta(days=date.today().weekday())
+    days = [mon + timedelta(days=i) for i in range(7)]
+    lines = ["<b>Неделя (Пн → Вс)</b>\n"]
+    for h in habits(uid):
+        row = "".join("✅" if done(h["id"], d) else "▫️" for d in days)
+        lines.append(f"{html.escape(h['name'])}\n{row}")
+    moods = "".join(
+        MOODS[q("SELECT v FROM mood WHERE uid=? AND d=?", uid, str(d))[0]["v"] - 1]
+        if q("SELECT v FROM mood WHERE uid=? AND d=?", uid, str(d)) else "▫️" for d in days)
+    lines.append(f"Настроение\n{moods}")
+    await c.message.edit_text("\n\n".join(lines), reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[[B(text="🏠 Меню", callback_data="menu")]]))
+
+@dp.callback_query(F.data == "mood")
+async def mood(c: CallbackQuery):
+    kb = InlineKeyboardMarkup(inline_keyboard=[[B(text=e, callback_data=f"m:{i + 1}") for i, e in enumerate(MOODS)]])
+    await c.message.edit_text("Как настроение сегодня?", reply_markup=kb)
+
+@dp.callback_query(F.data.startswith("m:"))
+async def mood_set(c: CallbackQuery):
+    ex("INSERT OR REPLACE INTO mood VALUES(?,?,?)", c.from_user.id, str(date.today()), int(c.data[2:]))
+    await c.message.edit_text("Записал 👍", reply_markup=menu_kb())
+
+# ---------- напоминания и друзья ----------
+@dp.message(Command("remind"))
+async def remind(m: Message, command: CommandObject):
+    arg = (command.args or "").strip()
+    if arg == "off":
+        ex("UPDATE users SET remind=NULL WHERE uid=?", m.from_user.id)
+        return await m.answer("Напоминание выключено")
+    try:
+        t = datetime.strptime(arg, "%H:%M").strftime("%H:%M")
+    except ValueError:
+        return await m.answer("Формат: /remind 20:00 или /remind off")
+    ex("INSERT OR IGNORE INTO users(uid,name) VALUES(?,?)", m.from_user.id, m.from_user.first_name)
+    ex("UPDATE users SET remind=? WHERE uid=?", t, m.from_user.id)
+    await m.answer(f"Буду напоминать каждый день в {t} (время сервера)")
+
+@dp.message(Command("invite"))
+async def invite(m: Message, bot: Bot):
+    me = await bot.get_me()
+    await m.answer(f"Отправьте другу ссылку:\nhttps://t.me/{me.username}?start=ref_{m.from_user.id}")
+
+@dp.message(Command("friends"))
+async def friends(m: Message):
+    fs = q("SELECT u.uid, u.name FROM friends f JOIN users u ON u.uid=f.b WHERE f.a=?", m.from_user.id)
+    if not fs:
+        return await m.answer("Друзей пока нет. Команда /invite даст ссылку.")
+    lines = []
+    for f in fs:
+        hs = habits(f["uid"])
+        n = sum(done(h["id"], date.today()) for h in hs)
+        best = max([streak(h["id"]) for h in hs], default=0)
+        lines.append(f"{html.escape(f['name'])}: {n}/{len(hs)} сегодня · 🔥 {best}")
+    await m.answer("<b>Друзья</b>\n\n" + "\n".join(lines))
+
+async def reminder_loop(bot: Bot):
+    sent = {}
+    while True:
+        now = datetime.now().strftime("%H:%M")
+        for u in q("SELECT uid FROM users WHERE remind=?", now):
+            if sent.get(u["uid"]) == str(date.today()):
+                continue
+            sent[u["uid"]] = str(date.today())
+            hs = habits(u["uid"])
+            left = [h["name"] for h in hs if not done(h["id"], date.today())]
+            if left:
+                try:
+                    await bot.send_message(u["uid"], "Не забыл про привычки?\n" + "\n".join(f"⬜ {html.escape(x)}" for x in left))
+                except Exception:
+                    pass
+        await asyncio.sleep(30)
+
+async def main():
+    bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+    asyncio.create_task(reminder_loop(bot))
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
