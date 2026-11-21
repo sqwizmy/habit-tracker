@@ -1,7 +1,7 @@
 // server.js
 // Node.js 18+
 // Бот должен быть администратором канала @focus_iron.
-// Запуск: BOT_TOKEN="ТОКЕН_БОТА" node server.js
+// Запуск: BOT_TOKEN="9123500193:AAG2gsEpxUG5OWeRdmx-wMIcXBM-8LEsTzE" node server.js
 
 const http = require('node:http');
 const fs = require('node:fs');
