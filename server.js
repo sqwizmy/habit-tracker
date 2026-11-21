@@ -1,26 +1,25 @@
+// server.js
 // Node.js 18+
-// Установка: npm install
-// Запуск: BOT_TOKEN="токен_бота" npm start
 // Бот должен быть администратором канала @focus_iron.
+// Запуск: BOT_TOKEN="ТОКЕН_БОТА" node server.js
 
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL = '@focus_iron';
-const HTML = path.join(__dirname, 'index.html');
+const HTML_FILE = path.join(__dirname, 'index.html');
 
 if (!BOT_TOKEN) {
-  throw new Error('Укажи BOT_TOKEN в переменных окружения');
+  throw new Error('Не задан BOT_TOKEN');
 }
 
-function verifyInitData(initData) {
-  if (typeof initData !== 'string' || !initData || initData.length > 20000) {
-    return null;
-  }
+// Проверка подлинности данных Telegram Mini App
+function verifyTelegramData(initData) {
+  if (typeof initData !== 'string' || !initData) return null;
 
   const params = new URLSearchParams(initData);
   const receivedHash = params.get('hash');
@@ -36,6 +35,7 @@ function verifyInitData(initData) {
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
 
+  // Правильный алгоритм проверки Telegram WebApp initData
   const secretKey = crypto
     .createHmac('sha256', 'WebAppData')
     .update(BOT_TOKEN)
@@ -56,11 +56,9 @@ function verifyInitData(initData) {
   }
 
   const authDate = Number(params.get('auth_date'));
+  const now = Math.floor(Date.now() / 1000);
 
-  if (
-    !Number.isFinite(authDate) ||
-    Math.abs(Date.now() / 1000 - authDate) > 86400
-  ) {
+  if (!Number.isFinite(authDate) || now - authDate > 86400 || authDate > now + 60) {
     return null;
   }
 
@@ -77,30 +75,28 @@ function verifyInitData(initData) {
   }
 }
 
-async function isSubscribed(userId) {
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember`;
+// Проверка подписки через Telegram Bot API
+async function checkSubscription(userId) {
+  const response = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CHANNEL,
+        user_id: userId
+      }),
+      signal: AbortSignal.timeout(10000)
+    }
+  );
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: CHANNEL,
-      user_id: userId
-    }),
-    signal: AbortSignal.timeout(8000)
-  });
+  const result = await response.json();
 
-  if (!response.ok) {
-    throw new Error(`Telegram API HTTP ${response.status}`);
+  if (!response.ok || !result.ok) {
+    throw new Error(result.description || 'Ошибка Telegram API');
   }
 
-  const data = await response.json();
-
-  if (!data.ok || !data.result) {
-    throw new Error(data.description || 'Telegram membership check failed');
-  }
-
-  const member = data.result;
+  const member = result.result;
 
   return (
     member.status === 'creator' ||
@@ -110,15 +106,21 @@ async function isSubscribed(userId) {
   );
 }
 
-const server = http.createServer(async (req, res) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Referrer-Policy', 'no-referrer');
+function sendJson(res, status, data) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
 
+  res.end(JSON.stringify(data));
+}
+
+const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/access') {
     let body = '';
 
     req.on('data', chunk => {
-      body += chunk;
+      body += chunk.toString();
 
       if (body.length > 30000) {
         req.destroy();
@@ -128,43 +130,31 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const user = verifyInitData(payload.initData);
+        const user = verifyTelegramData(payload.initData);
 
         if (!user) {
-          res.writeHead(401, {
-            'content-type': 'application/json; charset=utf-8',
-            'cache-control': 'no-store'
-          });
-
-          return res.end(JSON.stringify({
+          return sendJson(res, 401, {
             ok: false,
-            error: 'invalid_telegram_init_data'
-          }));
+            subscribed: false,
+            error: 'INVALID_TELEGRAM_DATA'
+          });
         }
 
-        const subscribed = await isSubscribed(user.id);
+        const subscribed = await checkSubscription(user.id);
 
-        res.writeHead(200, {
-          'content-type': 'application/json; charset=utf-8',
-          'cache-control': 'no-store'
-        });
-
-        res.end(JSON.stringify({
+        return sendJson(res, 200, {
           ok: true,
           subscribed
-        }));
-      } catch (error) {
-        console.error('Access check error:', error.message);
-
-        res.writeHead(503, {
-          'content-type': 'application/json; charset=utf-8',
-          'cache-control': 'no-store'
         });
 
-        res.end(JSON.stringify({
+      } catch (error) {
+        console.error('Ошибка проверки подписки:', error.message);
+
+        return sendJson(res, 503, {
           ok: false,
-          error: 'membership_check_unavailable'
-        }));
+          subscribed: false,
+          error: 'SUBSCRIPTION_CHECK_FAILED'
+        });
       }
     });
 
@@ -173,20 +163,21 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
     res.writeHead(200, {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'no-store'
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store'
     });
 
-    return fs.createReadStream(HTML).pipe(res);
+    return fs.createReadStream(HTML_FILE).pipe(res);
   }
 
-  res.writeHead(404, {
-    'content-type': 'text/plain; charset=utf-8'
-  });
+  if (req.method === 'GET' && req.url === '/health') {
+    return sendJson(res, 200, { ok: true });
+  }
 
+  res.writeHead(404);
   res.end('Not found');
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Habit tracker listening on ${PORT}`);
+  console.log(`Server started on port ${PORT}`);
 });
