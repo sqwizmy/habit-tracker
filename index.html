@@ -2,155 +2,200 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мои привычки</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Трекер Привычек</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--tg-theme-bg-color,#f5f5f5); color:var(--tg-theme-text-color,#222); padding:16px; }
-h1 { font-size:22px; margin-bottom:12px; }
-.add-row { display:flex; gap:8px; margin-bottom:16px; }
-input { flex:1; padding:12px; border:1px solid var(--tg-theme-hint-color,#ccc); border-radius:10px; font-size:16px; background:var(--tg-theme-secondary-bg-color,#fff); color:inherit; }
-button.add { padding:12px 18px; border:none; border-radius:10px; font-size:16px; background:var(--tg-theme-button-color,#2ea6ff); color:var(--tg-theme-button-text-color,#fff); }
-.habit { display:flex; align-items:center; gap:12px; background:var(--tg-theme-secondary-bg-color,#fff); border-radius:12px; padding:14px; margin-bottom:10px; }
-.check { width:28px; height:28px; border-radius:50%; border:2px solid var(--tg-theme-hint-color,#bbb); display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; cursor:pointer; flex-shrink:0; }
-.done .check { background:#34c759; border-color:#34c759; }
-.info { flex:1; }
-.name { font-size:16px; }
-.done .name { text-decoration:line-through; opacity:.6; }
-.streak { font-size:13px; opacity:.6; margin-top:2px; }
-.del { background:none; border:none; font-size:18px; opacity:.4; }
-.empty { text-align:center; opacity:.5; margin-top:40px; }
+:root {
+  --bg: var(--tg-theme-bg-color, #f5f5f5);
+  --text: var(--tg-theme-text-color, #000000);
+  --sec-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+  --btn: var(--tg-theme-button-color, #2ea6ff);
+  --btn-text: var(--tg-theme-button-text-color, #ffffff);
+  --hint: var(--tg-theme-hint-color, #8e8e93);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 16px; margin: 0; }
+h1 { font-size: 24px; margin-bottom: 16px; font-weight: 600; }
+.input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+input { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--hint); background: var(--sec-bg); color: var(--text); font-size: 16px; }
+button.add-btn { padding: 14px 24px; border-radius: 12px; border: none; background: var(--btn); color: var(--btn-text); font-weight: 600; }
+.habit-card { background: var(--sec-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.check-circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--hint); display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+.check-circle.done { background: #34c759; border-color: #34c759; color: white; }
+.info { flex: 1; }
+.name { font-size: 17px; font-weight: 600; }
+.streak-info { font-size: 13px; color: var(--hint); margin-top: 4px; }
+.streak-info.hot { color: #ff3b30; }
+.delete-btn { background: none; border: none; color: var(--hint); font-size: 20px; cursor: pointer; opacity: 0.5; }
+.delete-btn:hover { opacity: 1; color: #ff3b30; }
+.empty-state { text-align: center; color: var(--hint); margin-top: 40px; }
 </style>
 </head>
 <body>
+
 <h1>Мои привычки</h1>
-<div class="add-row">
-  <input id="input" placeholder="Новая привычка…" maxlength="40">
-  <button class="add" onclick="addHabit()">+</button>
+
+<div class="input-group">
+  <input id="habitInput" placeholder="Например: Пить воду, Читать 10 мин..." maxlength="50">
+  <button class="add-btn" onclick="addHabit()">+</button>
 </div>
+
 <div id="list"></div>
-<div class="empty" id="empty">Загружаю…</div>
+<div class="empty-state" id="emptyMsg">Здесь появятся ваши привычки</div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// Привязка данных к пользователю Telegram
-const uid = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 'guest';
-const cs = (tg.CloudStorage && tg.CloudStorage.setItem) ? tg.CloudStorage : null;
-const MAX_DAYS = 80; // сколько последних дней храним на привычку
+const uid = tg.initDataUnsafe?.user?.id || 'guest';
+const cs = tg.CloudStorage; // Облачное хранилище Telegram
+const MAX_DAYS_STORED = 90; // Храним историю 90 дней
 
+let habits = ;
+
+// Форматирование даты YYYY-MM-DD
 const fmt = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 const today = fmt(new Date());
-const cutoff = () => { const d = new Date(); d.setDate(d.getDate()-100); return fmt(d); };
 
-let habits = []; // {name: '...', days: ['2026-11-21', ...]}
-
-// Локальная копия — для просмотра в обычном браузере
-function lsRead(){ try { return JSON.parse(localStorage.getItem('ht_'+uid) || '[]'); } catch(e){ return []; } }
-function lsWrite(){ try { localStorage.setItem('ht_'+uid, JSON.stringify(habits)); } catch(e){} }
-
-// Загрузка из облака Telegram (основное хранилище)
-function loadAll(cb){
-  if (!cs) { habits = lsRead(); cb(); return; }
-  habits = []; let i = 0; let fromCloud = false;
-  (function next(){
-    cs.getItem('h'+i, function(err, val){
-      if (!err && val) {
-        const p = val.split('|');
-        habits.push({ name: p[0], days: p[1] ? p[1].split(',').filter(Boolean) : [] });
-        fromCloud = true; i++; next();
-      } else {
-        // в облаке пусто, но локально что-то есть — переносим в облако
-        if (!fromCloud) { habits = lsRead(); if (habits.length) saveAll(); }
-        cb();
-      }
-    });
-  })();
-}
-
-// Упаковка привычки в строку "имя|дата,дата,дата" (влезает в лимит облака)
-function pack(h){ return h.name + '|' + h.days.filter(d => d >= cutoff()).sort().slice(-MAX_DAYS).join(','); }
-function saveOne(i){ if (cs) cs.setItem('h'+i, pack(habits[i])); lsWrite(); }
-function saveAll(){
+// Загрузка данных
+function loadData() {
   if (cs) {
-    habits.forEach((h,i) => cs.setItem('h'+i, pack(h)));
-    cs.removeItem('h'+habits.length); // убираем лишний ключ после удаления
+    // Читаем все ключи h0, h1, h2... пока они есть
+    let i = 0;
+    const readNext = () => {
+      cs.getItem('h' + i, (err, val) => {
+        if (!err && val) {
+          const parts = val.split('|');
+          habits.push({ name: parts, days: parts ? parts.split(',').filter(Boolean) :  });
+          i++;
+          readNext();
+        } else {
+          render();
+        }
+      });
+    };
+    readNext();
+  } else {
+    // Фоллбэк на localStorage если не в Telegram
+    const stored = localStorage.getItem('habits_' + uid);
+    habits = stored ? JSON.parse(stored) : ;
+    render();
   }
-  lsWrite();
 }
 
-// Серия: сколько дней подряд отмечено, считая от сегодня назад
-function streak(days){
-  const set = new Set(days);
-  let s = 0; const d = new Date();
-  while (set.has(fmt(d))) { s++; d.setDate(d.getDate()-1); }
-  return s;
+// Сохранение данных
+function saveData() {
+  if (cs) {
+    habits.forEach((h, idx) => {
+      // Упаковываем: Имя|Дата,Дата,Дата
+      const daysStr = h.days.filter(d => d >= fmt(new Date(new Date().getTime() - 90 * 24 * 60 * 60 * 1000))).join(',');
+      cs.setItem('h' + idx, h.name + '|' + daysStr, () => {});
+    });
+    // Удаляем лишние ключи, если удалили привычки
+    if (habits.length === 0) cs.clear(); 
+  } else {
+    localStorage.setItem('habits_' + uid, JSON.stringify(habits));
+  }
 }
 
-function render(){
-  const empty = document.getElementById('empty');
-  if (!habits.length) {
-    empty.style.display = 'block';
-    empty.textContent = 'Пока пусто. Добавьте первую привычку!';
-  } else empty.style.display = 'none';
+// Расчет стрика (дней подряд)
+function getStreak(daysArray) {
+  const set = new Set(daysArray);
+  let count = 0;
+  let current = new Date();
+  
+  // Отматываем назад, пока даты есть в списке
+  while (set.has(fmt(current))) {
+    count++;
+    current.setDate(current.getDate() - 1);
+  }
+  return count;
+}
+
+function render() {
   const list = document.getElementById('list');
+  const empty = document.getElementById('emptyMsg');
   list.innerHTML = '';
-  habits.forEach(function(h, i){
-    const s = streak(h.days);
-    const done = h.days.indexOf(today) !== -1;
-    const row = document.createElement('div');
-    row.className = 'habit' + (done ? ' done' : '');
-    row.innerHTML =
-      '<div class="check">' + (done ? '✓' : '') + '</div>' +
-      '<div class="info"><div class="name">' + esc(h.name) + '</div>' +
-      '<div class="streak">🔥 ' + s + ' ' + plural(s) + ' подряд</div></div>' +
-      '<button class="del">✕</button>';
-    row.querySelector('.check').onclick = function(){ toggle(i); };
-    row.querySelector('.del').onclick = function(e){ e.stopPropagation(); del(i); };
-    list.appendChild(row);
-  });
+  
+  if (habits.length === 0) {
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    habits.forEach((h, idx) => {
+      const isDoneToday = h.days.includes(today);
+      const streak = getStreak(h.days);
+      const streakText = streak > 0 ? `${streak} ${getPlural(streak)} подряд` : 'Нет стрика';
+      const streakClass = streak > 7 ? 'hot' : '';
+
+      const card = document.createElement('div');
+      card.className = 'habit-card';
+      card.innerHTML = `
+        <div class="check-circle ${isDoneToday ? 'done' : ''}" onclick="toggleDone(${idx})">\${isDoneToday ? '✓' : ''}</div>
+        <div class="info">
+          <div class="name">\${escapeHtml(h.name)}</div>
+          <div class="streak-info ${streakClass}">🔥 ${streakText}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteHabit(\${idx}); event.stopPropagation()" aria-label="Удалить">✕</button>
+      `;
+      list.appendChild(card);
+    });
+  }
 }
 
-// Защита от ввода символов вроде < в названии
-function esc(s){ const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-function plural(n){
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return 'день';
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'дня';
-  return 'дней';
-}
-
-function addHabit(){
-  const input = document.getElementById('input');
+function addHabit() {
+  const input = document.getElementById('habitInput');
   const name = input.value.trim();
   if (!name) return;
-  habits.push({ name: name, days: [] });
-  saveOne(habits.length - 1);
+  
+  habits.push({ name: name, days:  });
+  saveData();
   input.value = '';
-  render();
-}
-
-function toggle(i){
-  const k = habits[i].days.indexOf(today);
-  if (k !== -1) habits[i].days.splice(k, 1); else habits[i].days.push(today);
-  saveOne(i);
   render();
   if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-function del(i){
-  habits.splice(i, 1);
-  saveAll();
+function toggleDone(idx) {
+  const todayIdx = habits[idx].days.indexOf(today);
+  if (todayIdx === -1) {
+    habits[idx].days.push(today);
+  } else {
+    habits[idx].days.splice(todayIdx, 1);
+  }
+  saveData();
   render();
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-document.getElementById('input').addEventListener('keydown', function(e){ if (e.key === 'Enter') addHabit(); });
+function deleteHabit(idx) {
+  if(confirm('Удалить эту привычку?')) {
+    habits.splice(idx, 1);
+    saveData();
+    render();
+  }
+}
 
-loadAll(render);
+function getPlural(n) {
+  const lastDigit = n % 10;
+  const lastTwoDigits = n % 100;
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 19) return 'дней';
+  if (lastDigit === 1) return 'день';
+  if (lastDigit >= 2 && lastDigit <= 4) return 'дня';
+  return 'дней';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Обработка Enter
+document.getElementById('habitInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addHabit();
+});
+
+loadData();
 </script>
 </body>
 </html>
