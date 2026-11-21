@@ -1,242 +1,298 @@
-import asyncio, html, os, sqlite3
-from datetime import date, datetime, timedelta
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Трекер привычек</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1d1d22;--mut:#8b8b95;--ac:#ee6677;--ac2:#f4a0a8;--soft:#fbe6e8;--line:#eee;--sh:0 6px 20px rgba(0,0,0,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#141417;--card:#202025;--tx:#f2f2f5;--mut:#9a9aa5;--soft:#3a2428;--line:#2e2e35;--sh:none}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,"SF Pro Text",Roboto,system-ui,sans-serif}
+#app{max-width:520px;margin:0 auto;padding:14px 16px calc(110px + env(safe-area-inset-bottom))}
+h1{font-size:20px;margin:6px 0 14px;text-align:center}
+h2{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.mut{color:var(--mut);font-size:12px}
+.week{display:flex;justify-content:space-between;margin-bottom:16px}
+.day{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut);padding:6px 2px;border-radius:24px;flex:1;cursor:pointer}
+.day.sel{outline:1.5px solid var(--soft);background:var(--card)}
+.dot{width:38px;height:38px;border-radius:50%;border:2px solid var(--soft);display:grid;place-items:center;font-size:14px;color:var(--tx)}
+.dot.full{background:var(--ac);border-color:var(--ac);color:#fff}
+.dot.part{border-color:var(--ac)}
+.dot.off{border-style:dashed;opacity:.5}
+.h{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:transform .12s}
+.h:active{transform:scale(.98)}
+.h .e{font-size:24px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
+.h .n{flex:1;font-weight:600;min-width:0}
+.h.on .n{text-decoration:line-through;opacity:.55}
+.chk{min-width:32px;height:32px;padding:0 6px;border-radius:11px;border:2px solid var(--line);display:grid;place-items:center;color:var(--mut);font-weight:700;font-size:13px}
+.h.on .chk{border:0;color:#fff}
+.ed{border:0;background:none;color:var(--mut);font-size:18px;padding:4px;cursor:pointer}
+.empty{text-align:center;color:var(--mut);padding:50px 20px}
+.empty b{display:block;font-size:48px;margin-bottom:8px}
+.btn{border:0;border-radius:18px;padding:13px 18px;font:600 15px/1 inherit;font-family:inherit;color:#fff;background:linear-gradient(135deg,#ee6677,#e9728f);cursor:pointer}
+.btn.ghost{background:var(--soft);color:var(--ac)}
+.btn.w{width:100%;margin-top:8px}
+.fab{position:fixed;right:20px;bottom:calc(96px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;font-size:28px;padding:0;box-shadow:0 8px 20px rgba(238,102,119,.4)}
+nav{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));max-width:492px;margin:0 auto;background:var(--card);border-radius:34px;display:flex;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+nav button{flex:1;border:0;background:none;font-size:21px;padding:10px 0;border-radius:26px;filter:grayscale(1);opacity:.6;cursor:pointer}
+nav button.on{background:var(--soft);filter:none;opacity:1}
+.moods{display:flex;justify-content:space-between}
+.moods button{border:2px solid transparent;background:var(--bg);border-radius:50%;width:52px;height:52px;font-size:28px;cursor:pointer}
+.moods button.on{border-color:var(--ac);background:var(--soft)}
+.mrow{display:flex;justify-content:space-between;margin-top:12px;text-align:center;font-size:12px;color:var(--mut)}
+.mrow div{flex:1}.mrow span{display:block;font-size:22px;min-height:30px}
+.quote{border-radius:20px;padding:34px 20px;text-align:center;color:#fff;font-size:19px;font-weight:600;background:linear-gradient(135deg,#9fd0e6,#f0a8b8);text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.prof{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.ava{width:64px;height:64px;border-radius:50%;border:3px solid #f1cf7a;background:var(--soft);display:grid;place-items:center;font-size:30px;overflow:hidden}
+.ava img{width:100%;height:100%;object-fit:cover}
+.ring{width:170px;height:170px;border-radius:50%;margin:6px auto 14px;display:grid;place-items:center;background:conic-gradient(var(--ac) calc(var(--p)*1%),var(--soft) 0)}
+.ring div{width:138px;height:138px;border-radius:50%;background:var(--card);display:grid;place-content:center;text-align:center}
+.ring b{font-size:34px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}
+.stats b{font-size:28px;display:block}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.cal .dot{width:100%;height:auto;aspect-ratio:1;font-size:13px;cursor:pointer}
+.cal .out{opacity:.3}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:600}
+.nav button{border:0;background:var(--soft);color:var(--ac);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
+.grid{overflow-x:auto}
+table{border-collapse:separate;border-spacing:4px;width:100%;font-size:13px}
+td,th{text-align:center;padding:0}th{color:var(--mut);font-weight:500}
+td.nm{text-align:left;white-space:nowrap;padding-right:6px}
+.c{min-width:28px;height:28px;border-radius:8px;background:var(--line);cursor:pointer;display:grid;place-items:center;font-size:11px;color:#fff}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:10}
+.sheet>div{background:var(--card);width:100%;max-width:520px;margin:0 auto;border-radius:28px 28px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+input[type=text],select{width:100%;border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:16px;padding:12px 14px;font:inherit;margin:6px 0}
+.pre{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.pre button{border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:14px;padding:8px 11px;font:inherit;cursor:pointer}
+.pre button.on{border-color:var(--ac);background:var(--soft)}
+.pre .sw{width:34px;height:34px;padding:0;border-radius:50%;border:3px solid transparent}.pre .sw.on{border-color:var(--tx)}
+.step{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
+.step button{width:38px;height:38px;border-radius:50%;border:0;background:var(--soft);color:var(--ac);font-size:20px;cursor:pointer}
+.row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
+.row:last-child{border:0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="nav"></nav>
+<script>
+const tg=window.Telegram?.WebApp; try{if(tg){tg.ready();tg.expand();}}catch(e){}
+window.onerror=(m,u,l)=>{try{tg.showAlert('Ошибка: '+m+' (строка '+l+')');return}catch(e){}alert('Ошибка: '+m+' (строка '+l+')')};
+const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const PRESETS=[['🚶','Прогулка',1],['💧','Пить воду',8],['🧘','Медитация',1],['🏃','Бег',1],['💪','Тренировка',1],['🛏️','Спать вовремя',1],['📖','Читать',1],['🍳','Завтрак',1],['🚴','Велосипед',1]];
+const COLORS=['#7adfba','#e9a9a9','#b7d3e0','#d985b8','#5dbde0','#e3a75f','#f4c97b','#ee6677'];
+const MOODS=['😞','😕','😐','🙂','😄'];
+const QUOTES=['Я являюсь источником','Маленький шаг каждый день — это уже путь','Сегодня лучше, чем вчера','Дисциплина — это забота о себе','Не идеально, а регулярно','Ты уже сделал больше, чем думаешь','Начни там, где стоишь','Привычки строят характер','Один день — одна победа','Прогресс важнее скорости','Отдых — тоже часть плана','Верь процессу'];
 
-from aiogram import Bot, Dispatcher, F
-from aiogram.client.default import DefaultBotProperties
-from aiogram.filters import Command, CommandObject, CommandStart
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, InlineKeyboardButton as B, InlineKeyboardMarkup, Message
+const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const wd=d=>(d.getDay()+6)%7;
+const mon=d=>add(d,-wd(d));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s);
 
-TOKEN = os.getenv("BOT_TOKEN")  # токен от @BotFather
-MOODS = ["😞", "😕", "😐", "🙂", "😄"]
-DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+let S={habits:[],log:{},mood:{},name:''};
+let tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
 
-# ---------- база ----------
-db = sqlite3.connect("tracker.db")
-db.row_factory = sqlite3.Row
-db.executescript("""
-CREATE TABLE IF NOT EXISTS users(uid INTEGER PRIMARY KEY, name TEXT, remind TEXT);
-CREATE TABLE IF NOT EXISTS habits(id INTEGER PRIMARY KEY AUTOINCREMENT, uid INTEGER, name TEXT);
-CREATE TABLE IF NOT EXISTS log(hid INTEGER, d TEXT, PRIMARY KEY(hid, d));
-CREATE TABLE IF NOT EXISTS mood(uid INTEGER, d TEXT, v INTEGER, PRIMARY KEY(uid, d));
-CREATE TABLE IF NOT EXISTS friends(a INTEGER, b INTEGER, PRIMARY KEY(a, b));
-""")
+/* ---------- storage ---------- */
+const KEY='habits_v2',CH=3000;
+const cloud=()=>{try{return tg&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null}catch(e){return null}};
+function lget(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+function load(cb){
+  let called=false;
+  const fin=v=>{if(called)return;called=true;try{if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}cb()};
+  const local=lget(),cs=cloud();
+  if(!cs)return fin(local);
+  setTimeout(()=>fin(local),2500);
+  try{
+    cs.getItem(KEY+'n',(e,n)=>{
+      n=+n;if(!n)return fin(local);
+      const keys=Array.from({length:n},(_,i)=>KEY+i);
+      cs.getItems(keys,(e2,o)=>fin(o?keys.map(k=>o[k]||'').join(''):local));
+    });
+  }catch(e){fin(local)}
+}
+function save(){
+  const v=JSON.stringify(S);
+  try{localStorage.setItem(KEY,v)}catch(e){}
+  const cs=cloud();if(!cs)return;
+  try{
+    const n=Math.ceil(v.length/CH);
+    for(let i=0;i<n;i++)cs.setItem(KEY+i,v.slice(i*CH,(i+1)*CH));
+    cs.setItem(KEY+'n',String(n));
+  }catch(e){}
+}
+const buzz=t=>tg?.HapticFeedback?.impactOccurred(t||'light');
 
-def q(sql, *a):
-    return db.execute(sql, a).fetchall()
+/* ---------- logic ---------- */
+const cnt=(k,id)=>(S.log[k]||{})[id]||0;
+const active=(h,d)=>h.days.includes(wd(d));
+const ok=(k,h)=>cnt(k,h.id)>=h.goal;
+function setCnt(k,id,n){
+  const o=S.log[k]||(S.log[k]={});
+  if(n>0)o[id]=n;else delete o[id];
+  if(!Object.keys(o).length)delete S.log[k];
+}
+function tap(k,id){
+  const h=S.habits.find(x=>x.id===id),c=cnt(k,id);
+  setCnt(k,id,c>=h.goal?0:c+1);save();buzz(c+1>=h.goal?'medium':'light');render();
+}
+/* -1: нет привычек в этот день, 0: ничего, 1: частично, 2: всё */
+function dayState(d,only){
+  const k=fmt(d),hs=S.habits.filter(h=>active(h,d)&&(!only||only==='all'||h.id===only));
+  if(!hs.length)return -1;
+  const n=hs.filter(h=>ok(k,h)).length;
+  return n===hs.length?2:hs.some(h=>cnt(k,h.id)>0)?1:0;
+}
+const cls=s=>s==2?'full':s==1?'part':s==-1?'off':'';
+function streak(h){
+  let n=0,d=today(),t=true;
+  for(let i=0;i<730;i++,t=false){
+    if(active(h,d)){if(ok(fmt(d),h)){n++}else if(!t)break}
+    d=add(d,-1);
+  }
+  return n;
+}
+function bestStreak(only){
+  const hs=S.habits.filter(h=>only==='all'||h.id===only);let best=0;
+  hs.forEach(h=>{let c=0,d=add(today(),-730);
+    for(let i=0;i<=730;i++,d=add(d,1)){if(!active(h,d))continue;if(ok(fmt(d),h)){c++;best=Math.max(best,c)}else c=0}});
+  return best;
+}
+const dayLabel=d=>fmt(d)===fmt(today())?'Сегодня':d.getDate()+' '+MONTHS[d.getMonth()].toLowerCase()+'';
 
-def ex(sql, *a):
-    db.execute(sql, a)
-    db.commit()
+/* ---------- views ---------- */
+function weekStrip(){
+  const m=mon(sel);
+  return '<div class="week">'+Array.from({length:7},(_,i)=>{const d=add(m,i);
+    return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`}).join('')+'</div>';
+}
+function vHome(){
+  const u=tg?.initDataUnsafe?.user,name=S.name||(u?u.first_name:'Гость');
+  const k=fmt(today()),m=mon(today());
+  const q=QUOTES[Math.floor(today()/864e5)%QUOTES.length];
+  return `<div class="prof"><div class="ava">${u?.photo_url?`<img src="${esc(u.photo_url)}">`:'🙂'}</div>
+  <div style="flex:1"><b style="font-size:22px">${esc(name)}</b><div class="mut">${S.habits.length} привыч. · серия до ${Math.max(0,...S.habits.map(streak))} дн.</div></div>
+  <button class="ed" onclick="rename()">✏️</button></div>
+  <div class="card"><h2>Как настроение сегодня?</h2><div class="moods">${MOODS.map((e,i)=>`<button class="${S.mood[k]===i+1?'on':''}" onclick="setMood(${i+1})">${e}</button>`).join('')}</div>
+  <div class="mrow">${Array.from({length:7},(_,i)=>{const d=add(m,i),v=S.mood[fmt(d)];return `<div>${DAYS[i]}<span>${v?MOODS[v-1]:'·'}</span></div>`}).join('')}</div></div>
+  <div class="card"><h2>Ежедневная цитата</h2><div class="quote">${q}</div></div>`;
+}
+function vToday(){
+  const k=fmt(sel),hs=S.habits.filter(h=>active(h,sel));
+  let h=`<h1>${dayLabel(sel)}</h1>`+weekStrip();
+  if(!S.habits.length)return h+`<div class="empty"><b>🚀</b>Привычек пока нет.<br>Добавьте первую:</div><button class="btn w" onclick="openEdit()">+ Добавить привычку</button>`;
+  if(!hs.length)h+=`<div class="empty"><b>🌿</b>На этот день привычек нет</div>`;
+  h+=hs.map(x=>{const c=cnt(k,x.id),on=c>=x.goal;
+    return `<div class="h ${on?'on':''}" onclick="tap('${k}','${x.id}')"><div class="e" style="background:${x.color}33">${x.emoji}</div>
+    <div class="n">${esc(x.name)}<div class="mut">${streak(x)?'🔥 серия '+streak(x):'серии нет'}</div></div>
+    <div class="chk" style="${on?'background:'+x.color:''}">${x.goal>1?c+'/'+x.goal:on?'✓':''}</div>
+    <button class="ed" onclick="event.stopPropagation();openEdit('${x.id}')">⋯</button></div>`}).join('');
+  return h+'<button class="btn ghost w" onclick="openEdit()">+ Добавить привычку</button>';
+}
+function vStats(){
+  const y=calM.getFullYear(),m=calM.getMonth(),start=mon(new Date(y,m,1)),days=[];
+  for(let i=0;i<42;i++)days.push(add(start,i));if(days[35].getMonth()!==m)days.length=35;
+  const t=today(),dim=new Date(y,m+1,0).getDate();
+  let tot=0,hit=0,perfect=0,all=0;
+  for(let d=1;d<=dim;d++){const dt=new Date(y,m,d);if(dt>t)break;
+    S.habits.filter(h=>active(h,dt)&&(fh==='all'||h.id===fh)).forEach(h=>{tot++;if(ok(fmt(dt),h)){hit++}});
+    if(dayState(dt,fh)==2)perfect++}
+  Object.values(S.log).forEach(o=>Object.keys(o).forEach(id=>{if(fh==='all'||id===fh)all++}));
+  const p=tot?Math.round(hit/tot*100):0;
+  return `<h1>Статистика</h1>
+  <select onchange="fh=this.value;render()"><option value="all">Все привычки</option>${S.habits.map(h=>`<option value="${h.id}" ${fh===h.id?'selected':''}>${h.emoji} ${esc(h.name)}</option>`).join('')}</select>
+  <div class="card" style="margin-top:10px"><div class="nav"><button onclick="mo(-1)">‹</button>${MONTHS[m]} ${y}<button onclick="mo(1)">›</button></div>
+  <div class="cal">${DAYS.map(d=>`<div class="mut">${d}</div>`).join('')}${days.map(d=>`<div class="dot ${cls(dayState(d,fh))} ${d.getMonth()!==m?'out':''}" onclick="pick('${fmt(d)}',1)">${d.getDate()}</div>`).join('')}</div></div>
+  <div class="card"><div class="ring" style="--p:${p}"><div><b>${p}%</b><span class="mut">за месяц</span></div></div>
+  <div class="stats"><div><b>${bestStreak(fh)}</b><span class="mut">лучшая серия</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div><div><b>${hit}</b><span class="mut">выполнено в месяце</span></div><div><b>${all}</b><span class="mut">отметок всего</span></div></div></div>`;
+}
+function vWeek(){
+  const w=Array.from({length:7},(_,i)=>add(weekStart,i)),p2=n=>String(n).padStart(2,'0');
+  const rng=`${p2(w[0].getDate())}.${p2(w[0].getMonth()+1)} – ${p2(w[6].getDate())}.${p2(w[6].getMonth()+1)}`;
+  let hit=0,tot=0,perfect=0;
+  w.forEach(d=>{if(dayState(d)==2)perfect++;S.habits.filter(h=>active(h,d)).forEach(h=>{tot++;if(ok(fmt(d),h))hit++})});
+  const rows=S.habits.map(h=>`<tr><td class="nm">${h.emoji} ${esc(h.name)}</td>${w.map(d=>{const k=fmt(d),c=cnt(k,h.id),a=active(h,d);
+    return `<td><div class="c" style="${ok(k,h)?'background:'+h.color:c?'background:'+h.color+'66':''};${a?'':'opacity:.35'}" onclick="${a?`tap('${k}','${h.id}')`:''}">${h.goal>1&&c?c:''}</div></td>`}).join('')}</tr>`).join('');
+  const mrow=`<tr><td class="nm">😊 Настроение</td>${w.map(d=>`<td>${MOODS[(S.mood[fmt(d)]||0)-1]||''}</td>`).join('')}</tr>`;
+  return `<h1>Недельный отчёт</h1><div class="card"><div class="nav"><button onclick="wk(-1)">‹</button>${rng}<button onclick="wk(1)">›</button></div>
+  ${S.habits.length?`<div class="grid"><table><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>${rows}${mrow}</table></div>`:'<div class="empty">Добавьте привычки на вкладке «Сегодня»</div>'}</div>
+  <div class="card"><div class="stats"><div><b>${tot?Math.round(hit/tot*100):0}%</b><span class="mut">выполнено</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div></div></div>`;
+}
+function vSet(){
+  return `<h1>Настройки</h1>
+  <div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length==7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div>
+  <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button>
+  <button class="btn ghost w" onclick="importData()">Восстановить из копии</button>
+  <button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`;
+}
+function render(){
+  $('#app').innerHTML={home:vHome,today:vToday,stats:vStats,week:vWeek,set:vSet}[tab]();
+  $('#nav').innerHTML=[['home','🏠'],['today','➕'],['stats','📊'],['week','📋'],['set','⚙️']].map(([t,i])=>`<button class="${t===tab?'on':''}" onclick="go('${t}')">${i}</button>`).join('');
+}
 
-def habits(uid):
-    return q("SELECT * FROM habits WHERE uid=? ORDER BY id", uid)
+/* ---------- actions ---------- */
+function go(t){tab=t;render();scrollTo(0,0)}
+function pick(k,jump){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}
+function mo(n){calM=new Date(calM.getFullYear(),calM.getMonth()+n,1);render()}
+function wk(n){weekStart=add(weekStart,7*n);render()}
+function setMood(v){const k=fmt(today());S.mood[k]===v?delete S.mood[k]:S.mood[k]=v;save();buzz();render()}
+function note(t){try{if(tg&&tg.isVersionAtLeast('6.2')){return tg.showAlert(t)}}catch(e){}alert(t)}
+function sure(t,cb){try{if(tg&&tg.isVersionAtLeast('6.2')){return tg.showConfirm(t,ok=>{if(ok)cb()})}}catch(e){}if(confirm(t))cb()}
+function ask(title,val,okText,cb,max){
+  const s=document.createElement('div');s.className='sheet';
+  s.onclick=e=>{if(e.target===s)s.remove()};
+  s.innerHTML=`<div><h1 style="margin-top:0">${title}</h1><input type="text" id="ask" ${max?`maxlength="${max}"`:''} value="${esc(val)}"><button class="btn w" id="askok">${okText}</button><button class="btn ghost w" id="askno">Отмена</button></div>`;
+  document.body.appendChild(s);
+  const i=s.querySelector('#ask');
+  s.querySelector('#askno').onclick=()=>s.remove();
+  s.querySelector('#askok').onclick=()=>{const v=i.value;s.remove();cb(v)};
+  setTimeout(()=>{try{i.focus();i.select()}catch(e){}},50);
+}
+function rename(){ask('Ваше имя',S.name||(tg?.initDataUnsafe?.user?.first_name||''),'Сохранить',v=>{S.name=v.trim();save();render()},30)}
+function exportData(){const v=JSON.stringify(S);let p;try{p=navigator.clipboard.writeText(v)}catch(e){p=Promise.reject()}
+  p.then(()=>note('Копия в буфере обмена')).catch(()=>ask('Выделите и скопируйте текст',v,'Закрыть',()=>{}))}
+function importData(){ask('Вставьте резервную копию','','Восстановить',v=>{if(!v)return;try{S=Object.assign({habits:[],log:{},mood:{},name:''},JSON.parse(v));save();render()}catch(e){note('Не удалось прочитать копию')}})}
+function resetAll(){sure('Удалить все привычки и историю?',()=>{S={habits:[],log:{},mood:{},name:''};save();render()})}
 
-def done(hid, d):
-    return bool(q("SELECT 1 FROM log WHERE hid=? AND d=?", hid, str(d)))
-
-def streak(hid):
-    d = date.today()
-    if not done(hid, d):
-        d -= timedelta(days=1)
-    n = 0
-    while done(hid, d):
-        n += 1
-        d -= timedelta(days=1)
-    return n
-
-# ---------- клавиатуры ----------
-def menu_kb():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [B(text="📅 Сегодня", callback_data=f"d:{date.today()}"), B(text="➕ Добавить", callback_data="add")],
-        [B(text="📊 Статистика", callback_data="stats"), B(text="📋 Неделя", callback_data="week")],
-        [B(text="😊 Настроение", callback_data="mood"), B(text="🗑 Удалить", callback_data="del")],
-    ])
-
-def today_view(uid, d: date):
-    hs = habits(uid)
-    title = "Сегодня" if d == date.today() else d.strftime("%d.%m.%Y")
-    if not hs:
-        return f"<b>{title}</b>\n\nПривычек пока нет. Нажмите «➕ Добавить».", menu_kb()
-    rows = [[B(text=("✅ " if done(h["id"], d) else "⬜ ") + h["name"],
-               callback_data=f"t:{h['id']}:{d}")] for h in hs]
-    rows.append([B(text="◀", callback_data=f"d:{d - timedelta(days=1)}"),
-                 B(text=DAYS[d.weekday()], callback_data=f"d:{date.today()}"),
-                 B(text="▶", callback_data=f"d:{d + timedelta(days=1)}")])
-    rows.append([B(text="🏠 Меню", callback_data="menu")])
-    n = sum(done(h["id"], d) for h in hs)
-    return f"<b>{title}</b>: {n}/{len(hs)}", InlineKeyboardMarkup(inline_keyboard=rows)
-
-# ---------- бот ----------
-dp = Dispatcher()
-
-class Add(StatesGroup):
-    name = State()
-
-@dp.message(CommandStart())
-async def start(m: Message, command: CommandObject, bot: Bot):
-    uid = m.from_user.id
-    ex("INSERT OR IGNORE INTO users(uid,name) VALUES(?,?)", uid, m.from_user.first_name)
-    ref = command.args or ""
-    if ref.startswith("ref_") and ref[4:].isdigit() and int(ref[4:]) != uid:
-        fid = int(ref[4:])
-        ex("INSERT OR IGNORE INTO friends VALUES(?,?)", uid, fid)
-        ex("INSERT OR IGNORE INTO friends VALUES(?,?)", fid, uid)
-        await m.answer("Вы теперь друзья 🤝")
-        try:
-            await bot.send_message(fid, f"{html.escape(m.from_user.first_name)} добавился в друзья 🤝")
-        except Exception:
-            pass
-    await m.answer("Привет! Я помогу выработать привычки.", reply_markup=menu_kb())
-
-@dp.callback_query(F.data == "menu")
-async def menu(c: CallbackQuery):
-    await c.message.edit_text("Меню", reply_markup=menu_kb())
-
-@dp.callback_query(F.data.startswith("d:"))
-async def day(c: CallbackQuery):
-    text, kb = today_view(c.from_user.id, date.fromisoformat(c.data[2:]))
-    await c.message.edit_text(text, reply_markup=kb)
-
-@dp.callback_query(F.data.startswith("t:"))
-async def toggle(c: CallbackQuery):
-    _, hid, d = c.data.split(":")
-    hid = int(hid)
-    if not q("SELECT 1 FROM habits WHERE id=? AND uid=?", hid, c.from_user.id):
-        return await c.answer()
-    if done(hid, d):
-        ex("DELETE FROM log WHERE hid=? AND d=?", hid, d)
-    else:
-        ex("INSERT INTO log VALUES(?,?)", hid, d)
-    text, kb = today_view(c.from_user.id, date.fromisoformat(d))
-    await c.message.edit_text(text, reply_markup=kb)
-    await c.answer()
-
-@dp.callback_query(F.data == "add")
-async def add_start(c: CallbackQuery, state: FSMContext):
-    await state.set_state(Add.name)
-    await c.message.answer("Напишите название привычки, например: 🏃 Бег")
-    await c.answer()
-
-@dp.message(Add.name)
-async def add_name(m: Message, state: FSMContext):
-    name = (m.text or "").strip()[:40]
-    if not name:
-        return await m.answer("Нужен текст. Попробуйте ещё раз.")
-    ex("INSERT INTO habits(uid,name) VALUES(?,?)", m.from_user.id, name)
-    await state.clear()
-    text, kb = today_view(m.from_user.id, date.today())
-    await m.answer(f"Добавлено: {html.escape(name)}\n\n{text}", reply_markup=kb)
-
-@dp.callback_query(F.data == "del")
-async def del_list(c: CallbackQuery):
-    hs = habits(c.from_user.id)
-    rows = [[B(text=f"🗑 {h['name']}", callback_data=f"rm:{h['id']}")] for h in hs]
-    rows.append([B(text="🏠 Меню", callback_data="menu")])
-    await c.message.edit_text("Что удалить?" if hs else "Удалять нечего.",
-                              reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
-
-@dp.callback_query(F.data.startswith("rm:"))
-async def remove(c: CallbackQuery):
-    hid = int(c.data[3:])
-    if q("SELECT 1 FROM habits WHERE id=? AND uid=?", hid, c.from_user.id):
-        ex("DELETE FROM habits WHERE id=?", hid)
-        ex("DELETE FROM log WHERE hid=?", hid)
-    await del_list(c)
-
-@dp.callback_query(F.data == "stats")
-async def stats(c: CallbackQuery):
-    hs = habits(c.from_user.id)
-    if not hs:
-        return await c.answer("Сначала добавьте привычку", show_alert=True)
-    lines = ["<b>Статистика (30 дней)</b>\n"]
-    for h in hs:
-        n = sum(done(h["id"], date.today() - timedelta(days=i)) for i in range(30))
-        lines.append(f"{html.escape(h['name'])}\n🔥 серия {streak(h['id'])} · {round(n / 30 * 100)}%")
-    await c.message.edit_text("\n\n".join(lines), reply_markup=InlineKeyboardMarkup(
-        inline_keyboard=[[B(text="🏠 Меню", callback_data="menu")]]))
-
-@dp.callback_query(F.data == "week")
-async def week(c: CallbackQuery):
-    uid = c.from_user.id
-    mon = date.today() - timedelta(days=date.today().weekday())
-    days = [mon + timedelta(days=i) for i in range(7)]
-    lines = ["<b>Неделя (Пн → Вс)</b>\n"]
-    for h in habits(uid):
-        row = "".join("✅" if done(h["id"], d) else "▫️" for d in days)
-        lines.append(f"{html.escape(h['name'])}\n{row}")
-    moods = "".join(
-        MOODS[q("SELECT v FROM mood WHERE uid=? AND d=?", uid, str(d))[0]["v"] - 1]
-        if q("SELECT v FROM mood WHERE uid=? AND d=?", uid, str(d)) else "▫️" for d in days)
-    lines.append(f"Настроение\n{moods}")
-    await c.message.edit_text("\n\n".join(lines), reply_markup=InlineKeyboardMarkup(
-        inline_keyboard=[[B(text="🏠 Меню", callback_data="menu")]]))
-
-@dp.callback_query(F.data == "mood")
-async def mood(c: CallbackQuery):
-    kb = InlineKeyboardMarkup(inline_keyboard=[[B(text=e, callback_data=f"m:{i + 1}") for i, e in enumerate(MOODS)]])
-    await c.message.edit_text("Как настроение сегодня?", reply_markup=kb)
-
-@dp.callback_query(F.data.startswith("m:"))
-async def mood_set(c: CallbackQuery):
-    ex("INSERT OR REPLACE INTO mood VALUES(?,?,?)", c.from_user.id, str(date.today()), int(c.data[2:]))
-    await c.message.edit_text("Записал 👍", reply_markup=menu_kb())
-
-# ---------- напоминания и друзья ----------
-@dp.message(Command("remind"))
-async def remind(m: Message, command: CommandObject):
-    arg = (command.args or "").strip()
-    if arg == "off":
-        ex("UPDATE users SET remind=NULL WHERE uid=?", m.from_user.id)
-        return await m.answer("Напоминание выключено")
-    try:
-        t = datetime.strptime(arg, "%H:%M").strftime("%H:%M")
-    except ValueError:
-        return await m.answer("Формат: /remind 20:00 или /remind off")
-    ex("INSERT OR IGNORE INTO users(uid,name) VALUES(?,?)", m.from_user.id, m.from_user.first_name)
-    ex("UPDATE users SET remind=? WHERE uid=?", t, m.from_user.id)
-    await m.answer(f"Буду напоминать каждый день в {t} (время сервера)")
-
-@dp.message(Command("invite"))
-async def invite(m: Message, bot: Bot):
-    me = await bot.get_me()
-    await m.answer(f"Отправьте другу ссылку:\nhttps://t.me/{me.username}?start=ref_{m.from_user.id}")
-
-@dp.message(Command("friends"))
-async def friends(m: Message):
-    fs = q("SELECT u.uid, u.name FROM friends f JOIN users u ON u.uid=f.b WHERE f.a=?", m.from_user.id)
-    if not fs:
-        return await m.answer("Друзей пока нет. Команда /invite даст ссылку.")
-    lines = []
-    for f in fs:
-        hs = habits(f["uid"])
-        n = sum(done(h["id"], date.today()) for h in hs)
-        best = max([streak(h["id"]) for h in hs], default=0)
-        lines.append(f"{html.escape(f['name'])}: {n}/{len(hs)} сегодня · 🔥 {best}")
-    await m.answer("<b>Друзья</b>\n\n" + "\n".join(lines))
-
-async def reminder_loop(bot: Bot):
-    sent = {}
-    while True:
-        now = datetime.now().strftime("%H:%M")
-        for u in q("SELECT uid FROM users WHERE remind=?", now):
-            if sent.get(u["uid"]) == str(date.today()):
-                continue
-            sent[u["uid"]] = str(date.today())
-            hs = habits(u["uid"])
-            left = [h["name"] for h in hs if not done(h["id"], date.today())]
-            if left:
-                try:
-                    await bot.send_message(u["uid"], "Не забыл про привычки?\n" + "\n".join(f"⬜ {html.escape(x)}" for x in left))
-                except Exception:
-                    pass
-        await asyncio.sleep(30)
-
-async def main():
-    bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
-    asyncio.create_task(reminder_loop(bot))
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+function openEdit(id){
+  const old=S.habits.find(h=>h.id===id);
+  const d=old?{...old,days:[...old.days]}:{emoji:'⭐',name:'',color:COLORS[0],days:[0,1,2,3,4,5,6],goal:1};
+  const s=document.createElement('div');s.className='sheet';
+  s.onclick=e=>{if(e.target===s)s.remove()};
+  const paint=()=>{
+    s.innerHTML=`<div><h1 style="margin-top:0">${old?'Изменить привычку':'Новая привычка'}</h1>
+    ${old?'':`<div class="pre">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]} ${p[1]}</button>`).join('')}</div>`}
+    <input type="text" id="nm" maxlength="30" placeholder="Название" value="${esc(d.name)}">
+    <input type="text" id="em" maxlength="4" placeholder="Эмодзи" value="${esc(d.emoji)}">
+    <div class="pre">${COLORS.map(c=>`<button class="sw ${c===d.color?'on':''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div>
+    <h2>Повторять</h2><div class="pre">${DAYS.map((n,i)=>`<button class="${d.days.includes(i)?'on':''}" data-d="${i}">${n}</button>`).join('')}</div>
+    <h2>Раз в день</h2><div class="step"><button data-g="-1">−</button><b>${d.goal}</b><button data-g="1">+</button></div>
+    <div id="err" style="color:#d33;min-height:20px;font-size:14px"></div><button class="btn w" id="ok">Сохранить</button>${old?'<button class="btn ghost w" id="rm">Удалить привычку</button>':''}</div>`;
+    const keep=()=>{d.name=$('#nm').value;d.emoji=$('#em').value||'⭐'};
+    s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const p=PRESETS[b.dataset.p];d.emoji=p[0];d.name=p[1];d.goal=p[2];paint()});
+    s.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{keep();d.color=b.dataset.c;paint()});
+    s.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{keep();const i=+b.dataset.d;d.days=d.days.includes(i)?d.days.filter(x=>x!==i):[...d.days,i].sort();paint()});
+    s.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{keep();d.goal=Math.min(99,Math.max(1,d.goal+ +b.dataset.g));paint()});
+    $('#ok').onclick=()=>{
+      keep();d.name=d.name.trim();
+      const err=t=>{$('#err').textContent=t};
+      if(!d.name)return err('Введите название привычки');
+      if(!d.days.length)return err('Выберите хотя бы один день');
+      if(old)Object.assign(old,d);else S.habits.push({...d,id:'h'+Date.now()});
+      s.remove();render();save()};
+    if(old)$('#rm').onclick=()=>{sure('Удалить привычку и её историю?',()=>{
+      S.habits=S.habits.filter(h=>h.id!==id);Object.keys(S.log).forEach(k=>setCnt(k,id,0));save();s.remove();render()})};
+  };
+  document.body.appendChild(s);paint();
+}
+load(render);
+</script>
+</body>
+</html>
