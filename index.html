@@ -1,669 +1,703 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Трекер привычек</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>FocusOnMe — Трекер привычек</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#f7f8fa;--card:#fff;--tx:#1d1d22;--mut:#8b8b95;--ac:#ee6677;--soft:#fbe6e8;--line:#eee;--sh:0 6px 20px rgba(0,0,0,.06)}
-@media(prefers-color-scheme:dark){:root{--bg:#141417;--card:#202025;--tx:#f2f2f5;--mut:#9a9aa5;--soft:#3a2428;--line:#2e2e35;--sh:none}}
+:root{--bg:#090611;--card:#171020;--tx:#f7efff;--mut:#a99bb9;--line:#38264d;--ac:#a855f7;--ac2:#d49aff;--glow:0 0 22px #9b4dff35}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,Roboto,system-ui,sans-serif}
-#app{max-width:520px;margin:0 auto;padding:14px 16px calc(110px + env(safe-area-inset-bottom))}
-h1{font-size:20px;margin:6px 0 14px;text-align:center}
-h2{font-size:16px;margin:0 0 10px}
-.card{background:var(--card);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
-.mut{color:var(--mut);font-size:12px}
-.week{display:flex;justify-content:space-between;margin-bottom:16px}
-.day{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut);padding:6px 2px;border-radius:24px;flex:1;cursor:pointer}
-.day.sel{outline:1.5px solid var(--soft)}
-.dot{width:38px;height:38px;border-radius:50%;border:2px solid var(--soft);display:grid;place-items:center;font-size:14px;color:var(--tx)}
-.dot.full{background:var(--ac);border-color:var(--ac);color:#fff}
-.dot.part{border-color:var(--ac)}
-.dot.off{border-style:dashed;opacity:.5}
-.h{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
-.h:active{transform:scale(.96)}
-.h .e{font-size:24px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
-.h .n{flex:1;font-weight:600;min-width:0}
-.h.on .n{text-decoration:line-through;opacity:.55}
-.chk{min-width:32px;height:32px;padding:0 6px;border-radius:11px;border:2px solid var(--line);display:grid;place-items:center;color:var(--mut);font-weight:700;font-size:13px}
-.h.on .chk{border:0;color:#fff;animation:checkPop .35s ease}
-.ed{border:0;background:none;color:var(--mut);font-size:18px;padding:4px;cursor:pointer}
-.empty{text-align:center;color:var(--mut);padding:35px 20px}
-.empty b{display:block;font-size:48px;margin-bottom:8px}
-.btn{border:0;border-radius:18px;padding:13px 18px;font:600 15px inherit;font-family:inherit;color:#fff;background:linear-gradient(135deg,#ee6677,#e9728f);cursor:pointer;transition:transform .15s ease,filter .15s ease}
-.btn:active{transform:scale(.96);filter:brightness(.92)}
-.btn.ghost{background:var(--soft);color:var(--ac)}
-.btn.w{width:100%;margin-top:8px}
-nav{position:fixed;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:500px;margin:auto;background:var(--card);border-radius:30px;display:flex;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:5}
-nav button{flex:1;border:0;background:none;font-size:19px;padding:10px 0;border-radius:24px;filter:grayscale(1);opacity:.55;cursor:pointer;transition:transform .15s ease,background .2s ease}
-nav button:active{transform:scale(.9)}
-nav button.on{background:var(--soft);filter:none;opacity:1}
-.moods{display:flex;justify-content:space-between}
-.moods button{border:2px solid transparent;background:var(--bg);border-radius:50%;width:48px;height:48px;font-size:25px;cursor:pointer;transition:transform .2s ease}
-.moods button:active{transform:scale(.9)}
-.moods button.on{border-color:var(--ac);background:var(--soft)}
-.mrow{display:flex;justify-content:space-between;margin-top:12px;text-align:center;font-size:12px;color:var(--mut)}
-.mrow div{flex:1}
-.mrow span{display:block;font-size:22px;min-height:30px}
-.quote{border-radius:20px;padding:30px 18px;text-align:center;color:#fff;font-size:18px;font-weight:600;background:linear-gradient(135deg,#9fd0e6,#f0a8b8);text-shadow:0 2px 8px #0003}
-.prof{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.ava{width:62px;height:62px;border-radius:50%;border:3px solid #f1cf7a;background:var(--soft);display:grid;place-items:center;font-size:28px;overflow:hidden;flex:none;cursor:pointer}
-.ava img{width:100%;height:100%;object-fit:cover}
-.ring{width:160px;height:160px;border-radius:50%;margin:6px auto 14px;display:grid;place-items:center;background:conic-gradient(var(--ac) calc(var(--p)*1%),var(--soft) 0)}
-.ring div{width:130px;height:130px;border-radius:50%;background:var(--card);display:grid;place-content:center;text-align:center}
-.ring b{font-size:32px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}
-.stats b{font-size:26px;display:block}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
-.cal .dot{width:100%;height:auto;aspect-ratio:1;font-size:13px;cursor:pointer}
-.cal .out{opacity:.3}
-.navrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:600}
-.navrow button{border:0;background:var(--soft);color:var(--ac);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
-.grid{overflow-x:auto}
-table{border-collapse:separate;border-spacing:4px;width:100%;font-size:13px}
-td,th{text-align:center;padding:0}
-th{color:var(--mut);font-weight:500}
-td.nm{text-align:left;white-space:nowrap;padding-right:6px}
-.c{min-width:27px;height:28px;border-radius:8px;background:var(--line);cursor:pointer;display:grid;place-items:center;font-size:11px;color:#fff}
-.sheet{position:fixed;inset:0;background:#0006;display:flex;align-items:flex-end;z-index:10}
-.sheet>div{background:var(--card);width:100%;max-width:520px;margin:0 auto;border-radius:28px 28px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
-input[type=text],select{width:100%;border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:16px;padding:12px 14px;font:inherit;margin:6px 0}
-.pre{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
-.pre button{border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:14px;padding:8px 11px;font:inherit;cursor:pointer}
-.pre button.on{border-color:var(--ac);background:var(--soft)}
-.pre .sw{width:34px;height:34px;padding:0;border-radius:50%;border:3px solid transparent}
-.pre .sw.on{border-color:var(--tx)}
-.step{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
-.step button{width:38px;height:38px;border-radius:50%;border:0;background:var(--soft);color:var(--ac);font-size:20px;cursor:pointer}
-.row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
-.pet{text-align:center;padding:18px 10px}
-.petface{font-size:76px;line-height:1.2;margin:8px;animation:petFloat 2s ease-in-out infinite}
-.petbar{height:10px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}
-.petbar i{display:block;height:100%;background:linear-gradient(90deg,#f4b45e,#ee6677);border-radius:20px;transition:width .5s ease}
-.ach{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.ach:last-child{border:0}
-.achico{width:48px;height:48px;border-radius:15px;background:var(--soft);display:grid;place-items:center;font-size:25px;flex:none}
-.ach.lock{opacity:.48}
-.ach b{display:block}
-.tag{font-size:11px;color:var(--ac);font-weight:700}
-#adBanner{display:none;position:sticky;top:0;z-index:20;max-width:520px;margin:0 auto;background:var(--card);color:var(--tx);padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);font-size:13px}
-#adBanner a{color:#ee6677;font-weight:700;text-decoration:none;margin-left:6px}
-#gate{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);padding:24px;align-items:center;justify-content:center;text-align:center}
-#gate .gatebox{width:100%;max-width:420px;background:var(--card);padding:26px 20px;border-radius:24px;box-shadow:var(--sh)}
-#gate .gateicon{font-size:56px;margin-bottom:12px}
-#gate p{color:var(--mut);line-height:1.55}
-#gate a{display:block;text-decoration:none;margin:16px 0}
-#gate button{width:100%;margin-top:8px}
-
-/* Плавное появление экранов */
-.screen-enter{animation:screenEnter .32s ease both}
-@keyframes screenEnter{
-  from{opacity:0;transform:translateY(9px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-/* Анимация галочки */
-@keyframes checkPop{
-  0%{transform:scale(.45)}
-  65%{transform:scale(1.2)}
-  100%{transform:scale(1)}
-}
-
-/* Плавающий питомец */
-@keyframes petFloat{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-7px)}
-}
-
-/* Получение опыта питомцем */
-.petface.xp-pop{animation:petXp .55s ease}
-@keyframes petXp{
-  0%{transform:scale(1)}
-  35%{transform:scale(1.2) rotate(-8deg)}
-  70%{transform:scale(1.12) rotate(8deg)}
-  100%{transform:scale(1)}
-}
-
-/* Повышение уровня питомца */
-.petface.level-pop{animation:petLevel .85s ease}
-@keyframes petLevel{
-  0%{transform:scale(1)}
-  30%{transform:scale(1.35) rotate(-12deg)}
-  60%{transform:scale(1.3) rotate(12deg)}
-  100%{transform:scale(1)}
-}
-
-/* Конфетти */
-.confetti{
-  position:fixed;
-  top:-15px;
-  width:9px;
-  height:13px;
-  z-index:9999;
-  pointer-events:none;
-  animation:confettiFall 1.8s ease-in forwards;
-}
-@keyframes confettiFall{
-  to{transform:translateY(105vh) rotate(720deg);opacity:0}
-}
-
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
+body{margin:0;background:radial-gradient(ellipse at top,#211033 0,#090611 55%);color:var(--tx);font:15px/1.45 system-ui,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+#app{max-width:560px;margin:auto;padding:14px 15px calc(105px + env(safe-area-inset-bottom))}
+h1{text-align:center;font-size:21px;margin:7px 0 17px}h2{font-size:16px;margin:0 0 12px}p,.mut{color:var(--mut)}.mut{font-size:12px}
+.card{background:linear-gradient(145deg,#1c1328,#130d1d);border:1px solid #43275e;border-radius:22px;padding:16px;margin-bottom:13px;box-shadow:var(--glow)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
+.btn{border:1px solid #c18aff;border-radius:15px;padding:11px 16px;color:white;background:linear-gradient(135deg,#7134b5,#a855f7);font-weight:700;box-shadow:0 0 14px #a855f733}.btn:active{transform:scale(.97)}
+.btn.ghost{background:#28183a;color:#d9b6ff;border-color:#623b82;box-shadow:none}.btn.danger{background:#542039;border-color:#a84c75}.btn.w{width:100%;margin-top:9px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{width:100%;padding:12px;border-radius:13px;border:1px solid #563775;background:#100a19;color:var(--tx);margin:6px 0}
+nav{position:fixed;z-index:10;bottom:calc(10px + env(safe-area-inset-bottom));left:8px;right:8px;max-width:540px;margin:auto;display:flex;gap:5px;background:#160e21ed;border:1px solid #553674;border-radius:22px;padding:6px;box-shadow:0 0 25px #0009;backdrop-filter:blur(12px)}
+nav button{flex:1;min-width:0;border:0;border-radius:14px;background:transparent;color:#9e8cab;padding:9px 5px;font-size:20px}
+nav button.on{background:#49266b;color:#fff;box-shadow:0 0 13px #a855f766}
+.prof{display:flex;align-items:center;gap:12px;margin:4px 0 16px}.ava{width:54px;height:54px;border-radius:50%;background:#321c4c;border:2px solid var(--ac2);display:grid;place-items:center;font-size:26px}
+.week{display:flex;gap:4px;justify-content:space-between;margin-bottom:14px}.day{flex:1;text-align:center;color:var(--mut);font-size:11px;padding:5px 1px;border-radius:13px}.day.sel{background:#39204f;color:white}
+.dot{width:34px;height:34px;margin:5px auto 0;border-radius:50%;border:1px solid #593b73;display:grid;place-items:center;font-size:12px}.dot.full{background:#8b42ca;border-color:#d2a0ff;color:white}.dot.part{border-color:#d28cff;background:#39204f}.dot.off{opacity:.35;border-style:dashed}
+.habit{display:flex;align-items:center;gap:11px;padding:12px;background:#1a1224;border:1px solid #39254d;border-radius:17px;margin-bottom:9px}.habit.done{border-color:#a855f7;background:#28173b}
+.emoji{width:43px;height:43px;display:grid;place-items:center;background:#39204f;border-radius:13px;font-size:23px}.hname{flex:1;min-width:0;font-weight:650}.hname small{display:block;color:var(--mut);font-size:11px;font-weight:400}
+.check{width:31px;height:31px;border-radius:10px;border:1px solid #72508e;display:grid;place-items:center;color:white}.done .check{background:#984bd0;border-color:#c68cff}.ed{border:0;background:none;color:#bba3d0;font-size:19px;padding:5px}
+.moods{display:flex;justify-content:space-between;gap:5px}.moods button{background:#241632;border:1px solid #49305f;border-radius:50%;width:45px;height:45px;font-size:23px}.moods button.on{border:2px solid #c58bff;background:#4a2868}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;text-align:center}.stat{padding:13px;background:#21152f;border-radius:15px}.stat b{font-size:25px;display:block;color:#d9b1ff}
+.ring{width:145px;height:145px;border-radius:50%;margin:10px auto 16px;background:conic-gradient(#b66cff calc(var(--p)*1%),#38254b 0);display:grid;place-items:center}.ring div{width:116px;height:116px;border-radius:50%;background:#171020;display:grid;place-content:center;text-align:center}.ring b{font-size:28px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}.cal .dot{width:100%;height:auto;aspect-ratio:1;margin:0}.calhead{color:var(--mut);font-size:11px;padding:5px}
+.navrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;font-weight:700}.navrow button{border:1px solid #68418b;background:#2c1940;color:#e4c7ff;border-radius:50%;width:33px;height:33px}
+.pet{text-align:center;padding:15px}.petface{font-size:83px;margin:10px;filter:drop-shadow(0 0 17px #bd72ff);animation:float 2.5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-7px)}}.petface.pop{animation:pop .65s ease}@keyframes pop{30%{transform:scale(1.3) rotate(-8deg)}65%{transform:scale(.9) rotate(8deg)}}
+.bar{height:10px;border-radius:20px;background:#352345;overflow:hidden;margin:9px 0}.bar i{height:100%;display:block;background:linear-gradient(90deg,#7838b6,#d49aff);border-radius:20px}
+.ach{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.ach:last-child{border:0}.achico{width:43px;height:43px;display:grid;place-items:center;background:#39204f;border-radius:13px;font-size:23px}.lock{opacity:.4}.tag{font-size:10px;color:#d3a2ff;font-weight:800}
+.product{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.product:last-child{border:0}.product .pic{font-size:34px;width:48px;text-align:center}.product .info{flex:1}.coin{color:#ffd77b;font-weight:800}
+.empty{text-align:center;padding:25px;color:var(--mut)}.quote{background:linear-gradient(135deg,#44216b,#1b1230);border:1px solid #7849a1;border-radius:18px;padding:22px;text-align:center;font-size:17px;font-weight:650}
+.sheet{position:fixed;inset:0;background:#000b;z-index:30;display:flex;align-items:flex-end}.sheet>div{background:#170f22;border:1px solid #68418b;border-radius:25px 25px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:560px;margin:auto;max-height:90vh;overflow:auto}
+.pre{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 14px}.pre button{border:1px solid #63427e;background:#281938;color:white;border-radius:12px;padding:8px}.pre button.on{background:#7540a4;border-color:#d0a0ff}
+#banner{display:none;text-align:center;padding:9px;background:#1c1128;border-bottom:1px solid #573775;font-size:12px}#banner a{color:#d9aaff;font-weight:800;text-decoration:none}
+#gate{position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at center,#29133d,#08050d 70%);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+.gatebox{max-width:420px;width:100%;background:#170e22;border:1px solid #8752b6;border-radius:27px;padding:27px 20px;box-shadow:0 0 35px #a855f744}.gateicon{font-size:55px}#gate a{text-decoration:none;display:block}
+.screen-enter{animation:appear .22s ease}@keyframes appear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.confetti{position:fixed;top:-15px;width:8px;height:13px;z-index:99;pointer-events:none;animation:fall 1.8s forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
+.task-active{border:1px solid #bd72ff;background:#28173b;border-radius:15px;padding:12px;margin:10px 0}.task-timer{font-size:27px;font-weight:800;color:#e0b7ff;text-align:center;margin:8px}.task-progress{height:9px;background:#352345;border-radius:20px;overflow:hidden;margin-top:9px}.task-progress i{height:100%;display:block;background:linear-gradient(90deg,#7838b6,#d49aff);width:0}.task-disabled{opacity:.45}
+.pet-visual{position:relative;display:inline-block}.pet-accessory{position:absolute;top:-8px;right:-24px;font-size:35px;filter:drop-shadow(0 0 8px #d49aff)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+textarea{resize:vertical;min-height:110px}.nt{display:block;color:#cfb3ea;font-size:11px;font-weight:400;margin-top:3px;white-space:pre-wrap;word-break:break-word}
 </style>
 </head>
 <body>
-
-<div id="adBanner">
-  📢 Подписывайся на мой Telegram-канал!
-  <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a>
-</div>
-
-<div id="gate">
-  <div class="gatebox">
-    <div class="gateicon">📢</div>
-    <h1>Подпишись на канал!</h1>
-    <p>Поддержи проект! Подписывайся на мой Telegram-канал @focus_iron.</p>
-    <a href="https://t.me/focus_iron" target="_blank" rel="noopener">
-      <button class="btn">Подписаться на канал</button>
-    </a>
-    <button class="btn ghost" id="continueBtn">Продолжить</button>
-  </div>
-</div>
-
-<div id="app"></div>
-<nav id="nav"></nav>
-
+<div id="banner">💜 Поддержи проект — <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a></div>
+<div id="gate"><div class="gatebox"><div class="gateicon">💜</div><h1>Добро пожаловать в FocusOnMe</h1><p>Поддержи проект подпиской на Telegram-канал.</p><a href="https://t.me/focus_iron" target="_blank" rel="noopener"><button class="btn w">Подписаться на канал</button></a><button class="btn ghost w" onclick="showApp()">Я подписался · Продолжить</button><div class="mut" style="margin-top:12px">Нажимая «Продолжить», ты переходишь к трекеру.</div></div></div>
+<div id="app"></div><nav id="nav" style="display:none"></nav>
 <script>
 const tg=window.Telegram?.WebApp;
-try{if(tg){tg.ready();tg.expand()}}catch(e){}
-
-function showRuntimeError(message){
-  let box=document.getElementById('runtimeError');
-  if(!box){
-    box=document.createElement('div');
-    box.id='runtimeError';
-    box.style.cssText='position:fixed;inset:0;z-index:9999;background:#fff;color:#222;padding:24px;font:15px/1.5 system-ui;overflow:auto';
-    document.body.appendChild(box);
-  }
-  box.innerHTML='<h2>Не удалось запустить приложение</h2><p></p><p>Скопируйте текст ошибки и отправьте разработчику.</p>';
-  box.querySelector('p').textContent=String(message);
-}
-window.onerror=(m,u,l)=>{showRuntimeError(String(m)+' (строка '+l+')');return true};
-window.addEventListener('unhandledrejection',e=>showRuntimeError(e.reason?.message||e.reason||'Неизвестная ошибка'));
-
-const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const PRESETS=[['🚶','Прогулка',1],['💧','Пить воду',8],['🧘','Медитация',1],['🏃','Бег',1],['💪','Тренировка',1],['🛏️','Спать вовремя',1],['📖','Читать',1],['🍳','Завтрак',1],['🚴','Велосипед',1]];
-const COLORS=['#7adfba','#e9a9a9','#b7d3e0','#d985b8','#5dbde0','#e3a75f','#f4c97b','#ee6677'];
-const MOODS=['😞','😕','😐','🙂','😄'];
-const QUOTES=['Маленький шаг каждый день — это уже путь','Сегодня лучше, чем вчера','Дисциплина — это забота о себе','Не идеально, а регулярно','Ты уже сделал больше, чем думаешь','Начни там, где стоишь','Привычки строят характер','Один день — одна победа','Прогресс важнее скорости','Отдых — тоже часть плана','Верь процессу'];
-
-const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const today=()=>{let d=new Date();d.setHours(0,0,0,0);return d},add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return x},wd=d=>(d.getDay()+6)%7,mon=d=>add(d,-wd(d));
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+try{tg?.ready();tg?.expand()}catch(e){}
 const $=s=>document.querySelector(s);
-
-let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}},tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
-
-const KEY='habits_v2',CH=3000;
-
-/* Звуковые эффекты */
-let soundEnabled=true;
+const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MOODS=['😞','😕','😐','🙂','😄'];
+const COLORS=['#a855f7','#bd72ff','#8e55c9','#d18aff','#7342a5','#9b69cf'];
+const QUOTES=["Маленькие шаги приводят к большим переменам.", "Не идеально, а регулярно.", "Сегодня — хорошее время начать.", "Прогресс важнее скорости.", "Каждый день — новая возможность.", "Начни с малого — и продолжай каждый день.", "Привычка — это голосование за того, кем ты хочешь стать.", "Сегодняшний шаг важнее вчерашних планов.", "Дисциплина — это забота о себе из будущего.", "Не жди мотивации, создай ритм.", "Даже самый длинный путь состоит из обычных шагов.", "Ты не обязан быть лучшим, достаточно стать лучше, чем вчера.", "Постоянство побеждает вдохновение.", "Одна выполненная привычка — уже победа дня.", "Маленькие действия, повторённые тысячу раз, меняют жизнь.", "Не сравнивай свой первый шаг с чужим сотым.", "Начни сейчас, а идеальный момент придёт по пути.", "Пропуск — это пауза, а не конец пути.", "Важно не то, как ты упал, а как вернулся.", "Сила не в рывке, а в регулярности.", "Сделай сегодня то, за что завтра скажешь себе спасибо.", "Твоё будущее строится из сегодняшних решений.", "Лучше пять минут каждый день, чем пять часов раз в месяц.", "Не бросай, когда трудно. Просто сбавь темп.", "Хорошая привычка начинается с лёгкого шага.", "Порядок в днях создаёт порядок в жизни.", "Прогресс не всегда заметен, но всегда накапливается.", "Каждый день — чистый лист для новой привычки.", "Верь в процесс, даже если результат пока скрыт.", "Ты сильнее своей лени.", "Сначала ты формируешь привычки, потом они формируют тебя.", "Ритуал утра задаёт тон всему дню.", "Выбирай то, что приближает, а не то, что отвлекает.", "Один шаг в нужную сторону лучше десяти мыслей о нём.", "Не ищи идеальный план, начни с любого.", "Терпение — тоже навык, и он тренируется.", "Твои усилия складываются, даже когда ты этого не видишь.", "Простые вещи, сделанные вовремя, творят чудеса.", "Сегодня ты можешь сделать чуть больше, чем вчера.", "Не требуй от себя невозможного, требуй регулярного.", "Лучшее время для старта — сейчас.", "Маленькая победа заряжает на большую.", "Береги свою серию, как свой маленький огонёк.", "Забота о себе — это не роскошь, а основа.", "Отдых — часть пути, а не его враг.", "Ты уже начал, а это самое трудное.", "Привычки — это архитектура твоей жизни.", "Если трудно начать, сделай это на две минуты.", "Не откладывай на завтра то, что можно начать сегодня хотя бы на минуту.", "Каждый выбор — кирпичик будущего.", "Тот, кто идёт медленно, но не останавливается, доходит.", "Хороший день начинается с одного правильного действия.", "Твоё тело слышит, как ты с ним обращаешься.", "Выпей воды — и ты уже сделал добро для себя.", "Прогулка проясняет голову лучше любого совета.", "Сон — фундамент хорошего дня.", "Двигайся — и мысли тоже начнут двигаться.", "Здоровье складывается из мелочей.", "Ешь так, чтобы организм говорил спасибо.", "Дыши глубже, живи спокойнее.", "Пять минут тишины возвращают ясность.", "Растяжка утром — подарок телу на весь день.", "Не гонись за идеальной формой, заботься о самочувствии.", "Тренировка — это встреча с собой, которая делает сильнее.", "Лёгкая усталость после дела лучше тяжёлой лени.", "Отдыхай без чувства вины — ты это заслужил.", "Тело любит ритм, а ритм любит повторение.", "Прислушайся к себе — там много подсказок.", "Свежий воздух — самый доступный помощник.", "Каждый стакан воды — шаг к бодрости.", "Лучшая инвестиция — это твоё здоровье.", "Сначала самочувствие, потом достижения.", "Больше шагов — больше энергии.", "Фокус — это умение сказать «нет» лишнему.", "Делай одно дело за раз, но делай его хорошо.", "Внимание — самый ценный ресурс, не раздавай его даром.", "Тишина помогает услышать главное.", "Убери отвлечения — и работа пойдёт легче.", "Сосредоточенность — это тренировка, как мышцы.", "Начни с самого важного, остальное подождёт.", "Планируй день, но оставляй место для жизни.", "Короткий фокус лучше долгой рассеянности.", "Не распыляйся: выбери главное и иди к нему.", "Ясная цель делает путь короче.", "Телефон подождёт, твоя цель — нет.", "Разбей большую задачу на маленькие шаги.", "Закончи одно дело — почувствуй прилив сил.", "Не пытайся всё сразу, пытайся всё по порядку.", "Хорошее начало — половина дела.", "Сделанное лучше идеального, но несделанного.", "Простота — признак ясного ума.", "Каждая минута внимания — вклад в результат.", "Ошибка — это урок, а не приговор.", "Падать не страшно, страшно не вставать.", "Каждая неудача учит чему-то новому.", "Не ругай себя — поддержи и иди дальше.", "Срыв — повод сделать выводы, а не бросить.", "Ты не обязан быть идеальным, достаточно быть настойчивым.", "Сегодня трудно — завтра будет легче.", "Тот, кто пробует, уже впереди тех, кто ждёт.", "Страх уменьшается, когда делаешь шаг.", "Неудача — это просто остановка на пути к успеху.", "Будь добрее к себе — ты делаешь всё, что можешь.", "Сомнения не повод останавливаться.", "Трудности делают результат ценнее.", "Не бойся начинать заново, это сила, а не слабость.", "Опыт приходит к тем, кто продолжает.", "Каждое «ещё раз» приближает к цели.", "Твои усилия важны, даже если их никто не видит.", "Утро — лучшее время для маленького подвига.", "Хорошее утро начинается с вечера.", "Начни день с того, что делает тебя счастливее.", "Вечером подведи итоги и похвали себя.", "Ложись вовремя — завтра скажет спасибо.", "Каждое утро — новый шанс стать лучше.", "Не начинай день со спешки, начни со спокойствия.", "Вечерний ритуал помогает отпустить заботы.", "Утро с улыбкой — день с удачей.", "Закончи день благодарностью.", "Ты можешь изменить день за одну минуту, если решишь.", "Пусть сегодня будет чуть лучше, чем вчера.", "Слушай себя и не бойся замедляться.", "Ты имеешь право на отдых и на мечты.", "Люби себя не за результат, а за стремление.", "Позволь себе радоваться мелочам.", "Твоё настроение — важный сигнал, прислушайся к нему.", "Будь внимателен к своим чувствам, они всегда на твоей стороне.", "Благодарность делает день светлее.", "Улыбнись — и мир ответит тем же.", "Не держи в себе, поделись добрым словом.", "Радость живёт в простых вещах.", "Спокойствие — это сила, которую можно тренировать.", "Ты не одинок в своих трудностях.", "Позаботься о себе так, как заботился бы о друге.", "Внутренний покой начинается с принятия.", "Ты достоин хорошей жизни.", "Дай себе время, и всё получится.", "Каждое чувство важно, но не каждое должно управлять.", "Береги свою энергию — она не бесконечна.", "Хороший день складывается из хороших решений.", "Радуйся маленьким победам — они ведут к большим.", "Тот, кто умеет ждать, умеет достигать.", "Не спеши — спеши ровно настолько, насколько нужно.", "Результат приходит к тем, кто не торопит время.", "Дерево растёт медленно, но корни у него крепкие.", "Терпение превращает усилия в успех.", "Всё великое начиналось с маленького шага.", "Успех — это сумма небольших усилий, повторяемых изо дня в день.", "Каждый день приближает тебя к цели, если ты идёшь.", "Хорошие вещи требуют времени.", "Не ищи быстрых путей, ищи надёжных.", "Двигайся уверенно, даже если шаги небольшие.", "Время работает на тех, кто работает с ним.", "Не меряй путь днями, считай шагами.", "Месяц привычки изменит больше, чем год намерений.", "Хочешь перемен — начни с одного дня.", "Твоя цель ближе, чем кажется.", "Пока ты сомневаешься, другие делают первый шаг.", "Мечты сбываются у тех, кто их планирует.", "Сделай шаг — дорога появится сама.", "Цель без плана — просто мечта.", "Не бойся большой цели, бойся не двигаться к ней.", "Каждая цель начинается с «хочу» и продолжается «делаю».", "Ставь реальные цели и достигай их по одной.", "Видишь цель — действуй, а не жди.", "Измеряй успех своим ростом, а не чужим.", "Твоя история пишется каждым днём.", "Верь в себя — ты способен на большее.", "Не позволяй страху решать за тебя.", "Смелость — это шаг, сделанный несмотря на страх.", "Ты уже прошёл больше, чем думаешь.", "Каждая привычка — это инвестиция в себя.", "Тот, кто растёт, никогда не стоит на месте.", "Не жалей о потерянном времени, используй найденное.", "Лучшая версия тебя строится сегодня.", "Учись у вчерашнего дня, живи сегодняшним, надейся на завтрашний.", "Лёгкость приходит с практикой.", "Чем чаще делаешь, тем проще становится.", "Повторение — мать мастерства.", "То, что сначала кажется трудным, потом станет привычным.", "Мастерство — это привычка, доведённая до совершенства.", "Сегодня ты тренируешься, завтра ты умеешь.", "Привычка делает трудное лёгким.", "Начни — и дело станет понятнее.", "Практика превращает знание в умение.", "Не останавливайся на достигнутом, но цени его.", "Лучше сделать неидеально, чем не сделать совсем.", "Любое умение рождается из упорства.", "Настойчивость открывает любые двери.", "Работа над собой — самая выгодная работа.", "Твоё развитие — твоя ответственность и твоя радость.", "Умей гордиться собой за каждый шаг.", "Хвали себя за старания, а не только за итоги.", "Награди себя за усилие — это тоже часть привычки.", "Маленькая награда помогает идти дальше.", "Ты заслуживаешь гордости за то, что продолжаешь.", "Твои достижения начинаются с решения.", "Сегодня ты ближе к цели, чем вчера.", "Порядок на столе — порядок в мыслях.", "Организованность экономит силы для важного."];
+const PRESETS=[['🚶','Прогулка',1],['💧','Пить воду',8],['🧘','Медитация',1],['🏃','Бег',1],['💪','Тренировка',1],['📖','Читать',1],['🛏️','Ложиться вовремя',1],['🍎','Есть фрукты',1],['✍️','Вести дневник',1]];
+const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>{let d=new Date();d.setHours(0,0,0,0);return d};
+const add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return x};
+const wd=d=>(d.getDay()+6)%7;
+const mon=d=>add(d,-wd(d));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='habits_v2';
+let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null},shop:{coins:0,owned:[],equipped:''},reminders:[],claimedQuests:{},favQuotes:[],notes:{},moodNotes:{},ref:{code:'',by:'',invited:0,claimed:[]},shares:0,sx:{night:0,early:0,got:[]},look:{bg:'default',skin:'default',bgs:['default'],skins:['default']}};
+let tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
+let soundEnabled=true,petEffect='',reminderTimer=null,lastReminder='',petTimerInterval=null;
 try{soundEnabled=localStorage.getItem('habit_sound')!=='off'}catch(e){}
-let audioContext=null;
 
-function playSound(type='tap'){
-  if(!soundEnabled)return;
-  try{
-    const AudioCtx=window.AudioContext||window.webkitAudioContext;
-    if(!AudioCtx)return;
-    audioContext=audioContext||new AudioCtx();
-    if(audioContext.state==='suspended')audioContext.resume();
-
-    const sounds={
-      tap:{freq:440,duration:.055,volume:.045},
-      success:{freq:660,duration:.16,volume:.09},
-      reward:{freq:880,duration:.25,volume:.1},
-      level:{freq:1040,duration:.3,volume:.1}
-    };
-    const s=sounds[type]||sounds.tap;
-    const osc=audioContext.createOscillator();
-    const gain=audioContext.createGain();
-    const now=audioContext.currentTime;
-
-    osc.type='sine';
-    osc.frequency.setValueAtTime(s.freq,now);
-    if(type==='reward'||type==='level'){
-      osc.frequency.setValueAtTime(s.freq*1.25,now+.09);
-    }
-    gain.gain.setValueAtTime(.0001,now);
-    gain.gain.exponentialRampToValueAtTime(s.volume,now+.018);
-    gain.gain.exponentialRampToValueAtTime(.0001,now+s.duration);
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    osc.start(now);
-    osc.stop(now+s.duration);
-  }catch(e){}
-}
-
-function toggleSound(){
-  soundEnabled=!soundEnabled;
-  try{localStorage.setItem('habit_sound',soundEnabled?'on':'off')}catch(e){}
-  if(soundEnabled)playSound('success');
-  render();
-  note(soundEnabled?'🔊 Звуки включены':'🔇 Звуки выключены');
-}
-
-/* Звук для нажатий на кнопки */
-document.addEventListener('click',e=>{
-  const button=e.target.closest('button');
-  if(button&&!button.disabled)playSound('tap');
-},true);
-
-/* Конфетти при достижении */
-function celebrate(){
-  playSound('reward');
-  const colors=COLORS;
-  for(let i=0;i<45;i++){
-    const piece=document.createElement('div');
-    piece.className='confetti';
-    piece.style.left=Math.random()*100+'vw';
-    piece.style.background=colors[Math.floor(Math.random()*colors.length)];
-    piece.style.animationDelay=Math.random()*.5+'s';
-    piece.style.borderRadius=Math.random()>.5?'50%':'2px';
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(),2500);
-  }
-}
-
-function cloud(){try{return tg&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null}catch(e){return null}}
 function save(){
-  let v=JSON.stringify(S);
-  try{localStorage.setItem(KEY,v)}catch(e){}
-  let cs=cloud();if(!cs)return;
-  try{let n=Math.ceil(v.length/CH);for(let i=0;i<n;i++)cs.setItem(KEY+i,v.slice(i*CH,(i+1)*CH));cs.setItem(KEY+'n',String(n))}catch(e){}
+ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+ try{if(tg?.CloudStorage&&tg.isVersionAtLeast('6.9')){const v=JSON.stringify(S),size=2800,n=Math.ceil(v.length/size);for(let i=0;i<n;i++)tg.CloudStorage.setItem(KEY+i,v.slice(i*size,(i+1)*size),()=>{});tg.CloudStorage.setItem(KEY+'n',String(n),()=>{})}}catch(e){}
 }
-function load(cb){
-  let local='';try{local=localStorage.getItem(KEY)||''}catch(e){}
-  let cs=cloud(),done=false;
-  const fin=v=>{if(done)return;done=true;try{if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}cb()};
-  if(!cs)return fin(local);
-  setTimeout(()=>fin(local),2500);
-  try{cs.getItem(KEY+'n',(e,n)=>{
-    n=+n;if(!n)return fin(local);
-    let keys=Array.from({length:n},(_,i)=>KEY+i);
-    cs.getItems(keys,(e2,o)=>fin(o?keys.map(k=>o[k]||'').join(''):local))
-  })}catch(e){fin(local)}
-}
-
-const buzz=t=>tg?.HapticFeedback?.impactOccurred(t||'light');
-const cnt=(k,id)=>(S.log[k]||{})[id]||0,active=(h,d)=>h.days.includes(wd(d)),ok=(k,h)=>cnt(k,h.id)>=h.goal;
-
-function setCnt(k,id,n){
-  let o=S.log[k]||(S.log[k]={});
-  if(n>0)o[id]=n;else delete o[id];
-  if(!Object.keys(o).length)delete S.log[k]
-}
-
-function tap(k,id){
-  let h=S.habits.find(x=>x.id===id);
-  if(!h)return;
-
-  const before=ACH.filter(a=>a.val()>=a.goal).map(a=>a.id);
-  let c=cnt(k,id);
-  let completedNow=c<h.goal&&c+1>=h.goal;
-
-  setCnt(k,id,c>=h.goal?0:c+1);
-
-  const after=ACH.filter(a=>a.val()>=a.goal);
-  const newAchievements=after.filter(a=>!before.includes(a.id));
-
-  playSound(completedNow?'success':'tap');
-
-  if(newAchievements.length){
-    celebrate();
-    setTimeout(()=>note('🏆 Новое достижение!\n\n'+newAchievements.map(a=>a.icon+' '+a.name).join('\n')),350);
-  }
-
-  save();
-  buzz(completedNow?'medium':'light');
-  render();
-}
-
-function dayState(d,only){
-  let k=fmt(d),hs=S.habits.filter(h=>active(h,d)&&(!only||only==='all'||h.id===only));
-  if(!hs.length)return -1;
-  let n=hs.filter(h=>ok(k,h)).length;
-  return n===hs.length?2:hs.some(h=>cnt(k,h.id)>0)?1:0
-}
-const cls=s=>s===2?'full':s===1?'part':s===-1?'off':'';
-
-function streak(h){
-  let n=0,d=today(),first=true;
-  for(let i=0;i<730;i++,first=false){
-    if(active(h,d)){if(ok(fmt(d),h))n++;else if(!first)break}
-    d=add(d,-1)
-  }
-  return n
-}
-function bestStreak(only){
-  let hs=S.habits.filter(h=>only==='all'||h.id===only),best=0;
-  hs.forEach(h=>{
-    let c=0,d=add(today(),-730);
-    for(let i=0;i<=730;i++,d=add(d,1)){
-      if(!active(h,d))continue;
-      if(ok(fmt(d),h)){c++;best=Math.max(best,c)}else c=0
-    }
-  });
-  return best
-}
-function completed(){
-  let n=0;
-  Object.entries(S.log).forEach(([k,o])=>Object.entries(o).forEach(([id,c])=>{
-    let h=S.habits.find(x=>x.id===id);if(h&&c>=h.goal)n++
-  }));
-  return n
-}
-function perfectDays(){
-  let n=0;
-  Object.keys(S.log).forEach(k=>{if(dayState(new Date(k+'T00:00:00'))===2)n++});
-  return n
-}
-
-const ACH=[
-{id:'first',icon:'🌱',name:'Первый шаг',desc:'Выполни первую привычку',goal:1,val:()=>completed()},
-{id:'five',icon:'⭐',name:'Начало положено',desc:'Выполни 5 привычек',goal:5,val:()=>completed()},
-{id:'ten',icon:'🔥',name:'В ритме',desc:'Выполни 10 привычек',goal:10,val:()=>completed()},
-{id:'thirty',icon:'🏅',name:'Настойчивость',desc:'Выполни 30 привычек',goal:30,val:()=>completed()},
-{id:'hundred',icon:'👑',name:'Легенда привычек',desc:'Выполни 100 привычек',goal:100,val:()=>completed()},
-{id:'streak3',icon:'📅',name:'Три дня подряд',desc:'Серия выполнения — 3 дня',goal:3,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'streak7',icon:'🗓️',name:'Целая неделя',desc:'Серия выполнения — 7 дней',goal:7,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'streak30',icon:'💎',name:'Месяц силы',desc:'Серия выполнения — 30 дней',goal:30,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'perfect1',icon:'✨',name:'Идеальный день',desc:'Выполни все привычки за день',goal:1,val:()=>perfectDays()},
-{id:'habits3',icon:'🧩',name:'Система',desc:'Создай 3 привычки',goal:3,val:()=>S.habits.length},
-{id:'mood7',icon:'😊',name:'На связи с собой',desc:'Отметь настроение 7 раз',goal:7,val:()=>Object.keys(S.mood).length},
-{id:'mood30',icon:'🌈',name:'Эмоциональный дневник',desc:'Отметь настроение 30 раз',goal:30,val:()=>Object.keys(S.mood).length},
-{id:'habits5',icon:'🛠️',name:'Пять направлений',desc:'Создай 5 привычек',goal:5,val:()=>S.habits.length},
-{id:'habits10',icon:'🏗️',name:'Большая система',desc:'Создай 10 привычек',goal:10,val:()=>S.habits.length},
-{id:'done20',icon:'🎯',name:'Первые двадцать',desc:'Выполни 20 привычек',goal:20,val:()=>completed()},
-{id:'done50',icon:'🥈',name:'Полсотни',desc:'Выполни 50 привычек',goal:50,val:()=>completed()},
-{id:'done250',icon:'🏆',name:'Четверть тысячи',desc:'Выполни 250 привычек',goal:250,val:()=>completed()},
-{id:'done500',icon:'💫',name:'Пять сотен',desc:'Выполни 500 привычек',goal:500,val:()=>completed()},
-{id:'perfect7',icon:'🌟',name:'Неделя мастерства',desc:'Собери 7 идеальных дней',goal:7,val:()=>perfectDays()},
-{id:'perfect30',icon:'☀️',name:'Месяц без пропусков',desc:'Собери 30 идеальных дней',goal:30,val:()=>perfectDays()},
-{id:'streak14',icon:'🔥',name:'Две недели',desc:'Серия выполнения — 14 дней',goal:14,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'streak60',icon:'🧱',name:'Железная привычка',desc:'Серия выполнения — 60 дней',goal:60,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'streak100',icon:'🚀',name:'Сто дней движения',desc:'Серия выполнения — 100 дней',goal:100,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'mood14',icon:'🪞',name:'Внимание к себе',desc:'Отметь настроение 14 раз',goal:14,val:()=>Object.keys(S.mood).length},
-{id:'mood100',icon:'💖',name:'Сто заметок о себе',desc:'Отметь настроение 100 раз',goal:100,val:()=>Object.keys(S.mood).length},
-{id:'perfect15',icon:'🌻',name:'Половина месяца',desc:'Собери 15 идеальных дней',goal:15,val:()=>perfectDays()},
-{id:'done1000',icon:'👑',name:'Тысяча побед',desc:'Выполни 1000 привычек',goal:1000,val:()=>completed()},
-{id:'streak5',icon:'🪴',name:'Пять дней подряд',desc:'Серия выполнения — 5 дней',goal:5,val:()=>Math.max(0,...S.habits.map(streak))},
-{id:'mood50',icon:'🎨',name:'Палитра настроения',desc:'Отметь настроение 50 раз',goal:50,val:()=>Object.keys(S.mood).length},
-{id:'streak21',icon:'🌠',name:'Три недели постоянства',desc:'Серия выполнения — 21 день',goal:21,val:()=>Math.max(0,...S.habits.map(streak))}
-];
-
-function achCount(){return ACH.filter(a=>a.val()>=a.goal).length}
-function dayLabel(d){return fmt(d)===fmt(today())?'Сегодня':d.getDate()+' '+MONTHS[d.getMonth()].toLowerCase()}
-function weekStrip(){
-  let m=mon(sel);
-  return '<div class="week">'+Array.from({length:7},(_,i)=>{
-    let d=add(m,i);
-    return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`
-  }).join('')+'</div>'
-}
-
-function changeAvatar(){
-  let input=document.createElement('input');input.type='file';input.accept='image/*';
-  input.onchange=()=>{
-    let f=input.files?.[0];if(!f)return;
-    if(!f.type.startsWith('image/'))return note('Выберите изображение');
-    let r=new FileReader();
-    r.onload=()=>{
-      let im=new Image();
-      im.onload=()=>{
-        let c=document.createElement('canvas');c.width=c.height=256;
-        let x=c.getContext('2d'),side=Math.min(im.width,im.height);
-        x.drawImage(im,(im.width-side)/2,(im.height-side)/2,side,side,0,0,256,256);
-        S.avatar=c.toDataURL('image/jpeg',.8);save();render();note('Аватарка изменена!')
-      };
-      im.src=r.result
-    };
-    r.readAsDataURL(f)
-  };
-  input.click()
-}
-function removeAvatar(){sure('Вернуть стандартную аватарку?',()=>{S.avatar='';save();render()})}
-
-function vHome(){
-  let u=tg?.initDataUnsafe?.user,name=S.name||(u?u.first_name:'Гость'),k=fmt(today()),m=mon(today()),q=QUOTES[Math.floor(today()/864e5)%QUOTES.length];
-  return `
-<div class="prof"><div class="ava" onclick="changeAvatar()">${S.avatar?`<img src="${S.avatar}">`:u?.photo_url?`<img src="${esc(u.photo_url)}">`:'🙂'}</div><div style="flex:1"><b style="font-size:22px">${esc(name)}</b><div class="mut">${S.habits.length} привычек · серия до ${Math.max(0,...S.habits.map(streak))} дн.</div></div><button class="ed" onclick="rename()">✏️</button></div>
-<div class="card"><h2>Как настроение сегодня?</h2><div class="moods">${MOODS.map((e,i)=>`<button class="${S.mood[k]===i+1?'on':''}" onclick="setMood(${i+1})">${e}</button>`).join('')}</div><div class="mrow">${Array.from({length:7},(_,i)=>{let d=add(m,i),v=S.mood[fmt(d)];return `<div>${DAYS[i]}<span>${v?MOODS[v-1]:'·'}</span></div>`}).join('')}</div></div>
-<div class="card"><h2>Ежедневная цитата</h2><div class="quote">${q}</div></div>
-<div class="card"><h2>Твой прогресс</h2><div class="stats"><div><b>${completed()}</b><span class="mut">выполнений</span></div><div><b>${achCount()}/${ACH.length}</b><span class="mut">достижений</span></div></div><button class="btn ghost w" onclick="go('ach')">Посмотреть награды 🏆</button></div>`
-}
-
-function vToday(){
-  let k=fmt(sel),hs=S.habits.filter(h=>active(h,sel)),h=`<h1>${dayLabel(sel)}</h1>`+weekStrip();
-  if(!S.habits.length)return h+`<div class="empty"><b>🚀</b>Привычек пока нет.<br>Добавьте первую:</div><button class="btn w" onclick="openEdit()">+ Добавить привычку</button>`;
-  if(!hs.length)h+=`<div class="empty"><b>🌿</b>На этот день привычек нет</div>`;
-  h+=hs.map(x=>{
-    let c=cnt(k,x.id),on=c>=x.goal;
-    return `<div class="h ${on?'on':''}" onclick="tap('${k}','${x.id}')"><div class="e" style="background:${x.color}33">${x.emoji}</div><div class="n">${esc(x.name)}<div class="mut">${streak(x)?'🔥 серия '+streak(x):'серии нет'}</div></div><div class="chk" style="${on?'background:'+x.color:''}">${x.goal>1?c+'/'+x.goal:on?'✓':''}</div><button class="ed" onclick="event.stopPropagation();openEdit('${x.id}')">⋯</button></div>`
-  }).join('');
-  return h+'<button class="btn ghost w" onclick="openEdit()">+ Добавить привычку</button>'
-}
-
-function detailedStats(){
-  const now=today(),y=calM.getFullYear(),m=calM.getMonth(),monthEnd=new Date(y,m+1,0);
-  let total=0,completedCount=0,activeDays=0,perfect=0;
-  const selectedHabits=S.habits.filter(h=>fh==='all'||h.id===fh);
-  const habitStats=selectedHabits.map(h=>{
-    let planned=0,done=0;
-    for(let d=1;d<=monthEnd.getDate();d++){
-      const date=new Date(y,m,d);if(date>now)break;if(!active(h,date))continue;
-      planned++;if(ok(fmt(date),h))done++;
-    }
-    total+=planned;completedCount+=done;
-    return {name:h.name,emoji:h.emoji,planned,done,percent:planned?Math.round(done/planned*100):0,streak:streak(h)};
-  });
-  for(let d=1;d<=monthEnd.getDate();d++){
-    const date=new Date(y,m,d);if(date>now)break;
-    const state=dayState(date,fh);if(state===1||state===2)activeDays++;if(state===2)perfect++;
-  }
-  return {total,completedCount,missed:Math.max(0,total-completedCount),activeDays,perfect,percent:total?Math.round(completedCount/total*100):0,habitStats};
-}
-
-function vStats(){
-  const y=calM.getFullYear(),m=calM.getMonth();let start=mon(new Date(y,m,1)),days=[];
-  for(let i=0;i<42;i++)days.push(add(start,i));if(days[35].getMonth()!==m)days.length=35;
-  const stats=detailedStats(),p=stats.percent;
-  return `<h1>Подробная статистика 📊</h1>
-  <select onchange="fh=this.value;render()"><option value="all">Все привычки</option>${S.habits.map(h=>`<option value="${h.id}" ${fh===h.id?'selected':''}>${h.emoji} ${esc(h.name)}</option>`).join('')}</select>
-  <div class="card"><div class="navrow"><button onclick="mo(-1)">‹</button>${MONTHS[m]} ${y}<button onclick="mo(1)">›</button></div>
-  <div class="cal">${DAYS.map(d=>`<div class="mut">${d}</div>`).join('')}${days.map(d=>`<div class="dot ${cls(dayState(d,fh))} ${d.getMonth()!==m?'out':''}" onclick="pick('${fmt(d)}',1)">${d.getDate()}</div>`).join('')}</div>
-  <div class="mut" style="margin-top:12px">Нажми на день, чтобы посмотреть привычки за эту дату.</div></div>
-  <div class="card"><h2>Общий прогресс</h2><div class="ring" style="--p:${p}"><div><b>${p}%</b><span class="mut">выполнено</span></div></div>
-  <div class="stats"><div><b>${stats.completedCount}</b><span class="mut">выполнено</span></div><div><b>${stats.missed}</b><span class="mut">пропущено</span></div><div><b>${stats.activeDays}</b><span class="mut">активных дней</span></div><div><b>${stats.perfect}</b><span class="mut">идеальных дней</span></div></div></div>
-  <div class="card"><h2>Статистика привычек</h2>${stats.habitStats.length?stats.habitStats.map(h=>`<div class="row"><div style="flex:1;min-width:0"><b>${h.emoji} ${esc(h.name)}</b><div class="mut">${h.done} из ${h.planned} выполнено</div><div class="petbar"><i style="width:${h.percent}%"></i></div><div class="mut">${h.percent}% · серия ${h.streak} дн.</div></div><b>${h.percent}%</b></div>`).join(''):'<div class="empty">Пока нет привычек</div>'}</div>
-  <div class="card"><h2>Дополнительные показатели</h2><div class="row"><span>🏆 Всего выполнений за всё время</span><b>${completed()}</b></div><div class="row"><span>🔥 Лучшая серия</span><b>${bestStreak(fh)} дн.</b></div><div class="row"><span>✨ Идеальных дней за всё время</span><b>${perfectDays()}</b></div><div class="row"><span>🎯 Всего привычек</span><b>${S.habits.length}</b></div><div class="row"><span>🏅 Получено достижений</span><b>${achCount()} / ${ACH.length}</b></div></div>`;
-}
-
-function vWeek(){
-  let w=Array.from({length:7},(_,i)=>add(weekStart,i)),p=n=>String(n).padStart(2,'0'),rng=`${p(w[0].getDate())}.${p(w[0].getMonth()+1)} – ${p(w[6].getDate())}.${p(w[6].getMonth()+1)}`,hit=0,tot=0,perfect=0;
-  w.forEach(d=>{if(dayState(d)===2)perfect++;S.habits.filter(h=>active(h,d)).forEach(h=>{tot++;if(ok(fmt(d),h))hit++})});
-  let rows=S.habits.map(h=>`<tr><td class="nm">${h.emoji} ${esc(h.name)}</td>${w.map(d=>{let k=fmt(d),c=cnt(k,h.id),a=active(h,d);return `<td><div class="c" style="${ok(k,h)?'background:'+h.color:c?'background:'+h.color+'66':''};${a?'':'opacity:.35'}" onclick="${a?`tap('${k}','${h.id}')`:''}">${h.goal>1&&c?c:''}</div></td>`}).join('')}</tr>`).join('');
-  let mrow=`<tr><td class="nm">😊 Настроение</td>${w.map(d=>`<td>${MOODS[(S.mood[fmt(d)]||0)-1]||''}</td>`).join('')}</tr>`;
-  return `<h1>Недельный отчёт</h1><div class="card"><div class="navrow"><button onclick="wk(-1)">‹</button>${rng}<button onclick="wk(1)">›</button></div>${S.habits.length?`<div class="grid"><table><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>${rows}${mrow}</table></div>`:'<div class="empty">Добавьте привычки на вкладке «Сегодня»</div>'}</div><div class="card"><div class="stats"><div><b>${tot?Math.round(hit/tot*100):0}%</b><span class="mut">выполнено</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div></div></div>`
-}
-
-function vAchievements(){
-  return `<h1>Достижения</h1><div class="card"><h2>🏆 Открыто · ${achCount()} из ${ACH.length}</h2>${ACH.map(a=>{
-    let v=a.val(),done=v>=a.goal;
-    return `<div class="ach ${done?'':'lock'}"><div class="achico">${done?a.icon:'🔒'}</div><div style="flex:1"><b>${a.name} ${done?'<span class="tag">ОТКРЫТО</span>':''}</b><div class="mut">${a.desc}</div><div class="mut">${Math.min(v,a.goal)} / ${a.goal}</div></div></div>`
-  }).join('')}</div>`
-}
-
-const PET_TASKS=[{id:'feed',icon:'🥕',name:'Покормить питомца',desc:'Позаботься о его энергии',xp:20},{id:'play',icon:'🎾',name:'Поиграть вместе',desc:'Немного веселья каждый день',xp:20},{id:'walk',icon:'🌳',name:'Прогуляться',desc:'Время для свежего воздуха',xp:30},{id:'train',icon:'🧠',name:'Потренироваться',desc:'Выучи с питомцем что-нибудь новое',xp:30}];
-const PET_FORMS=[{level:1,icon:'♟️',name:'Пешка'},{level:5,icon:'♞',name:'Конь'},{level:10,icon:'♝',name:'Слон'},{level:15,icon:'♜',name:'Ладья'},{level:20,icon:'♛',name:'Ферзь'},{level:25,icon:'♚',name:'Король'}];
-
-let petEffect='';
-
-function petStage(level=S.pet.level){
-  let stage=PET_FORMS[0];for(const form of PET_FORMS){if(level>=form.level)stage=form}return stage
+function normalize(){
+ if(!Array.isArray(S.habits))S.habits=[];
+ if(!S.log||typeof S.log!=='object')S.log={};
+ if(!S.mood||typeof S.mood!=='object')S.mood={};
+ S.habits=S.habits.map(h=>({...h,id:String(h.id||('h'+Math.random().toString(36).slice(2))),emoji:h.emoji||'⭐',name:h.name||'Привычка',color:h.color||COLORS[0],days:Array.isArray(h.days)?h.days:[0,1,2,3,4,5,6],goal:Math.max(1,Number(h.goal)||1)}));
+ if(!S.pet||typeof S.pet!=='object')S.pet={name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null};
+ if(!Array.isArray(S.pet.done))S.pet.done=[];
+ if(!('activeTask'in S.pet))S.pet.activeTask=null;
+ if(!S.shop||typeof S.shop!=='object')S.shop={coins:0,owned:[],equipped:''};
+ if(!Array.isArray(S.shop.owned))S.shop.owned=[];
+ if(!('equipped'in S.shop))S.shop.equipped='';
+ if(!Array.isArray(S.reminders))S.reminders=[];
+ if(!S.claimedQuests||typeof S.claimedQuests!=='object')S.claimedQuests={};
+ if(!Array.isArray(S.favQuotes))S.favQuotes=[];
+ if(!S.notes||typeof S.notes!=='object')S.notes={};
+ if(!S.moodNotes||typeof S.moodNotes!=='object')S.moodNotes={};
+ if(!S.ref||typeof S.ref!=='object')S.ref={code:'',by:'',invited:0,claimed:[]};
+ if(!Array.isArray(S.ref.claimed))S.ref.claimed=[];
+ S.ref.invited=Math.max(0,Number(S.ref.invited)||0);S.ref.by=S.ref.by||'';
+ if(!S.ref.code)S.ref.code=String(tg?.initDataUnsafe?.user?.id||('u'+Math.random().toString(36).slice(2,8)));
+ S.shares=Math.max(0,Number(S.shares)||0);
+ if(!S.sx||typeof S.sx!=='object')S.sx={night:0,early:0,got:[]};
+ S.sx.night=Math.max(0,Number(S.sx.night)||0);S.sx.early=Math.max(0,Number(S.sx.early)||0);if(!Array.isArray(S.sx.got))S.sx.got=[];
+ if(!S.look||typeof S.look!=='object')S.look={bg:'default',skin:'default',bgs:['default'],skins:['default']};
+ if(!Array.isArray(S.look.bgs)||!S.look.bgs.includes('default'))S.look.bgs=['default',...(Array.isArray(S.look.bgs)?S.look.bgs:[])];
+ if(!Array.isArray(S.look.skins)||!S.look.skins.includes('default'))S.look.skins=['default',...(Array.isArray(S.look.skins)?S.look.skins:[])];
+ if(!S.look.bgs.includes(S.look.bg))S.look.bg='default';if(!S.look.skins.includes(S.look.skin))S.look.skin='default';
+ S.shop.coins=Math.max(0,Number(S.shop.coins)||0);
+ S.pet.level=Math.max(1,Number(S.pet.level)||1);
+ S.pet.xp=Math.max(0,Number(S.pet.xp)||0);
 }
 function initPet(){
-  if(!S.pet||typeof S.pet!=='object')S.pet={name:'Пешка',level:1,xp:0,lastDate:'',done:[]};
-  S.pet.name=S.pet.name||'Пешка';
-  S.pet.level=Math.max(1,Number(S.pet.level)||1);
-  S.pet.xp=Math.max(0,Number(S.pet.xp)||0);
-  if(!Array.isArray(S.pet.done))S.pet.done=[];
-  const todayKey=fmt(today());
-  if(S.pet.lastDate!==todayKey){S.pet.lastDate=todayKey;S.pet.done=[];save()}
+ normalize();if(!S.pet.name)S.pet.name='Пешка';
+ const k=fmt(today());if(S.pet.lastDate!==k){S.pet.lastDate=k;S.pet.done=[];save()}
 }
-function petTask(id){
-  initPet();
-  const task=PET_TASKS.find(x=>x.id===id);
-  if(!task||S.pet.done.includes(id))return;
-
-  const oldStage=petStage(S.pet.level);
-  S.pet.done.push(id);
-  S.pet.xp+=task.xp;
-
-  let levelUps=0;
-  while(S.pet.xp>=100){S.pet.xp-=100;S.pet.level++;levelUps++}
-
-  const newStage=petStage(S.pet.level);
-  petEffect=levelUps>0?'level-pop':'xp-pop';
-
-  save();
-  buzz('medium');
-  playSound(levelUps>0?'level':'success');
-
-  render();
-
-  setTimeout(()=>{
-    petEffect='';
-    const face=document.querySelector('.petface');
-    if(face)face.classList.remove('xp-pop','level-pop');
-  },900);
-
-  if(newStage.level>oldStage.level){
-    note(`🎉 ЭВОЛЮЦИЯ!\n\nТвой питомец превратился в ${newStage.name} ${newStage.icon}!\n\nУровень: ${S.pet.level}`);
-  }else if(levelUps>0){
-    note(`🎉 Новый уровень!\n\nУровень питомца: ${S.pet.level}\nФорма: ${newStage.name} ${newStage.icon}`);
+function load(){
+ try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+ normalize();initPet();render();
+ if(S.pet.activeTask)startPetTimer();
+ try{
+  if(tg?.CloudStorage&&tg.isVersionAtLeast('6.9')){
+   tg.CloudStorage.getItem(KEY+'n',(err,n)=>{
+    n=Number(n||0);if(err||!n||n>100)return;
+    const keys=Array.from({length:n},(_,i)=>KEY+i);
+    tg.CloudStorage.getItems(keys,(e,obj)=>{
+     if(e||!obj)return;
+     try{const data=JSON.parse(keys.map(k=>obj[k]||'').join(''));if(data&&Array.isArray(data.habits)&&!S.habits.length){S=Object.assign(S,data);normalize();initPet();save();render();if(S.pet.activeTask)startPetTimer()}}catch(e){}
+    });
+   });
   }
+ }catch(e){}
 }
-function renamePet(){ask('Имя питомца',S.pet.name,'Сохранить',v=>{v=v.trim();if(v){S.pet.name=v.slice(0,24);save();render()}},24)}
-
+function buzz(t='light'){try{tg?.HapticFeedback?.impactOccurred(t)}catch(e){}}
+let audio=null;
+function playSound(type='tap'){
+ if(!soundEnabled)return;
+ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=audio||new AC();if(audio.state==='suspended')audio.resume();const cfg={tap:[430,.05,.035],success:[660,.14,.07],reward:[880,.24,.08],level:[1040,.3,.09]}[type]||[430,.05,.035];const o=audio.createOscillator(),g=audio.createGain(),now=audio.currentTime;o.type='sine';o.frequency.setValueAtTime(cfg[0],now);if(type==='reward'||type==='level')o.frequency.exponentialRampToValueAtTime(cfg[0]*1.35,now+cfg[1]*.7);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(cfg[2],now+.015);g.gain.exponentialRampToValueAtTime(.0001,now+cfg[1]);o.connect(g);g.connect(audio.destination);o.start(now);o.stop(now+cfg[1])}catch(e){}
+}
+document.addEventListener('click',e=>{if(e.target.closest('button'))playSound('tap')},true);
+function toggleSound(){soundEnabled=!soundEnabled;try{localStorage.setItem('habit_sound',soundEnabled?'on':'off')}catch(e){}if(soundEnabled)playSound('success');render();note(soundEnabled?'Звуки включены':'Звуки выключены')}
+function note(t){try{if(tg?.showAlert)return tg.showAlert(t)}catch(e){}alert(t)}
+function sure(t,cb){try{if(tg?.showConfirm)return tg.showConfirm(t,v=>{if(v)cb()})}catch(e){}if(confirm(t))cb()}
+function ask(title,value,callback,max=50){
+ const s=document.createElement('div');s.className='sheet';s.innerHTML=`<div><h2>${esc(title)}</h2><input id="askInput" maxlength="${max}" value="${esc(value)}"><button class="btn w" id="askOk">Сохранить</button><button class="btn ghost w" id="askNo">Отмена</button></div>`;
+ s.onclick=e=>{if(e.target===s)s.remove()};document.body.appendChild(s);s.querySelector('#askNo').onclick=()=>s.remove();s.querySelector('#askOk').onclick=()=>{const v=s.querySelector('input').value;s.remove();callback(v)};
+}
+function celebrate(){playSound('reward');for(let i=0;i<45;i++){const p=document.createElement('i');p.className='confetti';p.style.left=Math.random()*100+'vw';p.style.background=COLORS[i%COLORS.length];p.style.animationDelay=Math.random()*.4+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),2300)}}
+const cnt=(k,id)=>(S.log[k]||{})[id]||0;
+const active=(h,d)=>h.days.includes(wd(d));
+const ok=(k,h)=>cnt(k,h.id)>=h.goal;
+function setCnt(k,id,n){const o=S.log[k]||(S.log[k]={});if(n>0)o[id]=n;else delete o[id];if(!Object.keys(o).length)delete S.log[k]}
+function completed(){let n=0;Object.entries(S.log).forEach(([k,o])=>Object.entries(o).forEach(([id,c])=>{const h=S.habits.find(x=>x.id===id);if(h&&c>=h.goal)n++}));return n}
+function streak(h){let n=0,d=today(),first=true;for(let i=0;i<730;i++,first=false){if(active(h,d)){if(ok(fmt(d),h))n++;else if(!first)break}d=add(d,-1)}return n}
+function bestStreak(){let best=0;S.habits.forEach(h=>{let n=0,d=add(today(),-730);for(let i=0;i<=730;i++,d=add(d,1)){if(!active(h,d))continue;if(ok(fmt(d),h)){n++;best=Math.max(best,n)}else n=0}});return best}
+function dayState(d,filter='all'){const hs=S.habits.filter(h=>active(h,d)&&(filter==='all'||h.id===filter));if(!hs.length)return -1;const n=hs.filter(h=>ok(fmt(d),h)).length;return n===hs.length?2:hs.some(h=>cnt(fmt(d),h.id)>0)?1:0}
+function cls(v){return v===2?'full':v===1?'part':v===-1?'off':''}
+function achCount(){return ACH.filter(a=>a.val()>=a.goal).length}
+const ACH=[
+{id:'first',icon:'🌱',name:'Первый шаг',desc:'Выполни первую привычку',goal:1,val:()=>completed()},
+{id:'five',icon:'⭐',name:'Пять побед',desc:'Выполни 5 привычек',goal:5,val:()=>completed()},
+{id:'ten',icon:'🔥',name:'Десять побед',desc:'Выполни 10 привычек',goal:10,val:()=>completed()},
+{id:'thirty',icon:'🏅',name:'Настойчивость',desc:'Выполни 30 привычек',goal:30,val:()=>completed()},
+{id:'hundred',icon:'👑',name:'Легенда',desc:'Выполни 100 привычек',goal:100,val:()=>completed()},
+{id:'streak3',icon:'📅',name:'Три дня подряд',desc:'Серия 3 дня',goal:3,val:()=>Math.max(0,...S.habits.map(streak))},
+{id:'streak7',icon:'💎',name:'Целая неделя',desc:'Серия 7 дней',goal:7,val:()=>Math.max(0,...S.habits.map(streak))},
+{id:'habits3',icon:'🧩',name:'Система',desc:'Создай 3 привычки',goal:3,val:()=>S.habits.length},
+{id:'mood7',icon:'😊',name:'На связи с собой',desc:'Отметь настроение 7 раз',goal:7,val:()=>Object.keys(S.mood).length}
+];
+function tap(k,id){
+ const h=S.habits.find(x=>x.id===id);if(!h)return;
+ const before=ACH.filter(a=>a.val()>=a.goal).map(a=>a.id);
+ const old=cnt(k,id),next=old>=h.goal?0:old+1;setCnt(k,id,next);
+ if(next>=h.goal&&old<h.goal){S.shop.coins+=10;const hr=new Date().getHours();if(hr<5)S.sx.night++;else if(hr<7)S.sx.early++;playSound('success');buzz('medium')}else playSound('tap');
+ const newly=ACH.filter(a=>!a.secret&&a.val()>=a.goal&&!before.includes(a.id));save();render();
+ if(newly.length){celebrate();setTimeout(()=>note('🏆 Новое достижение!\n'+newly.map(a=>a.icon+' '+a.name).join('\n')),250)}
+}
+function weekStrip(){const m=mon(sel);return '<div class="week">'+Array.from({length:7},(_,i)=>{const d=add(m,i);return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`}).join('')+'</div>'}
+function vHome(){
+ const user=tg?.initDataUnsafe?.user,name=S.name||(user?.first_name||'Гость'),k=fmt(today()),q=QUOTES[Math.floor(today()/86400000)%QUOTES.length];
+ return `<div class="prof"><div class="ava">${S.avatar?`<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'💜'}</div><div style="flex:1"><b style="font-size:20px">${esc(name)}</b><div class="mut">${S.habits.length} привычек</div></div><button class="ed" onclick="rename()">✏️</button></div>
+ <div class="card"><h2>Как настроение сегодня?</h2><div class="moods">${MOODS.map((x,i)=>`<button class="${S.mood[k]===i+1?'on':''}" onclick="setMood(${i+1})">${x}</button>`).join('')}</div><button class="btn ghost w" onclick="editMoodNote()">📝 ${S.moodNotes[k]?'Изменить заметку':'Заметка к настроению'}</button>${S.moodNotes[k]?`<span class="nt">${esc(S.moodNotes[k])}</span>`:''}</div>
+ <div class="card"><h2>✨ Мысль дня</h2><div class="quote">${q}</div><button class="btn ${S.favQuotes.includes(q)?'':'ghost'} w" onclick="toggleFavQuote()">${S.favQuotes.includes(q)?'★ В избранном':'☆ В избранное'}</button><button class="btn ghost w" onclick="shareQuote()">📤 Поделиться в Telegram</button></div>
+ <div class="card"><h2>Твой игровой прогресс</h2><div class="stats"><div class="stat"><b>${completed()}</b><span class="mut">выполнений</span></div><div class="stat"><b>${S.shop.coins}</b><span class="mut">🪙 монет</span></div><div class="stat"><b>${achCount()}</b><span class="mut">достижений</span></div><div class="stat"><b>${S.pet.level}</b><span class="mut">уровень питомца</span></div></div></div>
+ <div class="card"><h2>Быстрый переход</h2><button class="btn w" onclick="go('today')">☑️ Отметить привычки</button><button class="btn ghost w" onclick="go('quests')">📜 Мои квесты</button><button class="btn ghost w" onclick="go('ach')">🏆 Достижения · ${achCount()}/${ACH.length}</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты · ${S.favQuotes.length}</button><button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок · ${notesTotal()+moodNotesTotal()}</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="shareProgress()">📤 Поделиться прогрессом</button><button class="btn ghost w" onclick="go('calendar')">📅 Календарь</button></div>`;
+}
+function vToday(){
+ const k=fmt(sel),hs=S.habits.filter(h=>active(h,sel));let out=`<h1>${k===fmt(today())?'Сегодня':sel.getDate()+' '+MONTHS[sel.getMonth()]}</h1>${weekStrip()}`;
+ if(!S.habits.length)return out+`<div class="card empty">🌱<br>Добавь свою первую привычку!</div><button class="btn w" onclick="openEdit()">+ Добавить привычку</button>`;
+ if(!hs.length)out+='<div class="card empty">На этот день привычек нет.</div>';
+ out+=hs.map(h=>{const c=cnt(k,h.id),done=c>=h.goal,nt=(S.notes[k]||{})[h.id]||'';return `<div class="habit ${done?'done':''}" onclick="tap('${k}','${h.id}')"><div class="emoji">${h.emoji}</div><div class="hname">${esc(h.name)}<small>${streak(h)?'🔥 Серия: '+streak(h)+' дн.':'Начни серию сегодня'} · +10 🪙 за выполнение</small>${nt?`<span class="nt">📝 ${esc(nt.length>80?nt.slice(0,80)+'…':nt)}</span>`:''}</div><div class="check">${h.goal>1?c+'/'+h.goal:done?'✓':''}</div><button class="ed" onclick="event.stopPropagation();editNote('${k}','${h.id}')">📝</button><button class="ed" onclick="event.stopPropagation();openEdit('${h.id}')">⋯</button></div>`}).join('');
+ return out+'<button class="btn ghost w" onclick="openEdit()">＋ Добавить привычку</button>';
+}
+function vCalendar(){
+ const y=calM.getFullYear(),m=calM.getMonth(),first=mon(new Date(y,m,1)),days=Array.from({length:42},(_,i)=>add(first,i));
+ return `<h1>📅 Календарь</h1><div class="card"><div class="navrow"><button onclick="mo(-1)">‹</button>${MONTHS[m]} ${y}<button onclick="mo(1)">›</button></div><div class="cal">${DAYS.map(x=>`<div class="calhead">${x}</div>`).join('')}${days.map(d=>`<div class="dot ${cls(dayState(d))}" onclick="pick('${fmt(d)}',true)">${d.getDate()}</div>`).join('')}</div><div class="mut" style="margin-top:13px">Фиолетовый — все привычки выполнены. Обведённый — частичный прогресс.</div></div><div class="card"><h2>Выбранный день</h2><div class="row"><span>${fmt(sel)}</span><b>${dayState(sel)===2?'✨ Отлично!':dayState(sel)===1?'💜 Есть прогресс':'—'}</b></div><button class="btn w" onclick="pick('${fmt(today())}',true)">Перейти к сегодняшним привычкам</button></div>`;
+}
+function detailedStats(){
+ const y=calM.getFullYear(),m=calM.getMonth(),end=new Date(y,m+1,0).getDate(),now=today(),hs=S.habits.filter(h=>fh==='all'||h.id===fh);let planned=0,done=0,activeDays=0,perfect=0;
+ const items=hs.map(h=>{let p=0,dn=0;for(let i=1;i<=end;i++){const d=new Date(y,m,i);if(d>now)break;if(active(h,d)){p++;planned++;if(ok(fmt(d),h)){dn++;done++}}}return {h,p,dn,percent:p?Math.round(dn/p*100):0}});
+ for(let i=1;i<=end;i++){const d=new Date(y,m,i);if(d>now)break;const s=dayState(d,fh);if(s===1||s===2)activeDays++;if(s===2)perfect++}
+ return {planned,done,missed:planned-done,activeDays,perfect,percent:planned?Math.round(done/planned*100):0,items};
+}
+function vStats(){
+ const st=detailedStats(),p=st.percent;
+ return `<h1>📊 Статистика</h1><select onchange="fh=this.value;render()"><option value="all">Все привычки</option>${S.habits.map(h=>`<option value="${h.id}" ${fh===h.id?'selected':''}>${h.emoji} ${esc(h.name)}</option>`).join('')}</select>
+ <div class="card"><div class="navrow"><button onclick="mo(-1)">‹</button>${MONTHS[calM.getMonth()]} ${calM.getFullYear()}<button onclick="mo(1)">›</button></div><div class="ring" style="--p:${p}"><div><b>${p}%</b><span class="mut">выполнено</span></div></div><div class="stats"><div class="stat"><b>${st.done}</b><span class="mut">выполнено</span></div><div class="stat"><b>${st.missed}</b><span class="mut">пропущено</span></div><div class="stat"><b>${st.activeDays}</b><span class="mut">активных дней</span></div><div class="stat"><b>${st.perfect}</b><span class="mut">идеальных дней</span></div></div></div>
+ <div class="card"><h2>Привычки за месяц</h2>${st.items.length?st.items.map(x=>`<div class="row"><div style="flex:1">${x.h.emoji} ${esc(x.h.name)}<div class="bar"><i style="width:${x.percent}%"></i></div><span class="mut">${x.dn}/${x.p} выполнено</span></div><b>${x.percent}%</b></div>`).join(''):'<div class="empty">Пока нет привычек</div>'}</div>
+ <div class="card"><h2>За всё время</h2><div class="row">Всего выполнений <b>${completed()}</b></div><div class="row">Лучшая серия <b>${bestStreak()} дней</b></div><div class="row">Монет <b>${S.shop.coins} 🪙</b></div><div class="row">Достижения <b>${achCount()}/${ACH.length}</b></div></div>`;
+}
+function vWeek(){
+ const w=Array.from({length:7},(_,i)=>add(weekStart,i));let hit=0,total=0;
+ const rows=S.habits.map(h=>`<tr><td style="text-align:left;white-space:nowrap">${h.emoji} ${esc(h.name)}</td>${w.map(d=>{const k=fmt(d),c=cnt(k,h.id),a=active(h,d);if(a){total++;if(ok(k,h))hit++}return `<td><button style="width:27px;height:27px;border:0;border-radius:8px;background:${ok(k,h)?'#9145c6':'#38264b'};color:white" onclick="${a?`tap('${k}','${h.id}')`:''}">${ok(k,h)?'✓':c||''}</button></td>`}).join('')}</tr>`).join('');
+ return `<h1>📋 Неделя</h1><div class="card"><div class="navrow"><button onclick="wk(-1)">‹</button>${fmt(w[0])} — ${fmt(w[6])}<button onclick="wk(1)">›</button></div><div style="overflow:auto"><table style="width:100%;border-spacing:4px;font-size:11px"><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>${rows}</table></div><div class="ring" style="--p:${total?Math.round(hit/total*100):0}"><div><b>${total?Math.round(hit/total*100):0}%</b><span class="mut">за неделю</span></div></div></div>`;
+}
+const PET_FORMS=[{level:1,icon:'♟️',name:'Пешка'},{level:5,icon:'🐴',name:'Конь'},{level:10,icon:'🦄',name:'Слон'},{level:15,icon:'🦊',name:'Ладья'},{level:20,icon:'🐉',name:'Ферзь'},{level:25,icon:'👑',name:'Пешка-король'}];
+const PET_TASKS=[
+ {id:'feed',icon:'🥕',name:'Покормить питомца',desc:'Питомец спокойно кушает',xp:20,duration:30},
+ {id:'play',icon:'🎾',name:'Поиграть с питомцем',desc:'Питомец играет и веселится',xp:20,duration:60},
+ {id:'walk',icon:'🌳',name:'Прогуляться',desc:'Питомец отправляется на прогулку',xp:30,duration:90},
+ {id:'train',icon:'🧠',name:'Потренироваться',desc:'Питомец тренируется',xp:30,duration:120}
+];
+function petStage(level=S.pet.level){let f=PET_FORMS[0];PET_FORMS.forEach(x=>{if(level>=x.level)f=x});return f}
+function formatTaskTime(ms){const sec=Math.max(0,Math.ceil(ms/1000)),min=Math.floor(sec/60),rest=sec%60;return String(min).padStart(2,'0')+':'+String(rest).padStart(2,'0')}
+function startPetTask(id){
+ initPet();if(S.pet.activeTask)return note('Сначала дождись завершения текущего задания!');
+ const task=PET_TASKS.find(x=>x.id===id);if(!task)return;if(S.pet.done.includes(id))return note('Это задание уже выполнено сегодня!');
+ const now=Date.now();S.pet.activeTask={id:task.id,startedAt:now,endsAt:now+task.duration*1000};save();playSound('success');buzz('medium');startPetTimer();render();
+}
+function finishPetTask(){
+ const activeTask=S.pet.activeTask;if(!activeTask)return;
+ const task=PET_TASKS.find(x=>x.id===activeTask.id);
+ if(!task){S.pet.activeTask=null;save();render();return}
+ if(S.pet.done.includes(task.id)){S.pet.activeTask=null;save();render();return}
+ S.pet.done.push(task.id);S.pet.xp+=task.xp;S.pet.activeTask=null;S.shop.coins+=5;
+ let ups=0;while(S.pet.xp>=100){S.pet.xp-=100;S.pet.level++;ups++}
+ const stage=petStage();petEffect='pop';save();
+ if(petTimerInterval){clearInterval(petTimerInterval);petTimerInterval=null}
+ playSound(ups?'level':'reward');buzz('medium');render();
+ if(ups){celebrate();setTimeout(()=>note('🎉 Новый уровень питомца: '+S.pet.level+' · '+stage.name),250)}
+ note('🎉 Задание завершено! +'+task.xp+' XP и +5 🪙');
+ setTimeout(()=>{petEffect='';if(tab==='pet')render()},800);
+}
+function renderPetTimer(){
+ const a=S.pet.activeTask;if(!a)return;
+ const task=PET_TASKS.find(x=>x.id===a.id);if(!task)return;
+ const left=a.endsAt-Date.now(),total=task.duration*1000,passed=Math.min(total,Math.max(0,total-left));
+ const timer=$('#petTimer'),progress=$('#petTaskProgress');
+ if(timer)timer.textContent=formatTaskTime(left);
+ if(progress)progress.style.width=Math.min(100,Math.max(0,passed/total*100))+'%';
+ if(left<=0){if(petTimerInterval){clearInterval(petTimerInterval);petTimerInterval=null}finishPetTask()}
+}
+function startPetTimer(){
+ if(petTimerInterval){clearInterval(petTimerInterval);petTimerInterval=null}
+ if(!S.pet.activeTask)return;
+ if(S.pet.activeTask.endsAt<=Date.now()){finishPetTask();return}
+ renderPetTimer();petTimerInterval=setInterval(()=>{if(!S.pet.activeTask){clearInterval(petTimerInterval);petTimerInterval=null;return}renderPetTimer()},1000);
+}
+const SHOP=[
+ {id:'crown',icon:'👑',name:'Корона',desc:'Украшение для питомца',price:100},
+ {id:'star',icon:'🌟',name:'Звёздочка',desc:'Маленький талисман',price:50},
+ {id:'heart',icon:'💜',name:'Сердечко',desc:'Подарок питомцу',price:35},
+ {id:'crystal',icon:'💎',name:'Кристалл',desc:'Редкий аксессуар',price:150},
+ {id:'cape',icon:'🦸',name:'Плащ героя',desc:'Костюм для питомца',price:200}
+];
+function equipItem(id){if(!S.shop.owned.includes(id))return note('Сначала купи этот аксессуар!');const item=SHOP.find(x=>x.id===id);if(!item)return;S.shop.equipped=id;save();render();note(item.icon+' '+item.name+' надет на питомца!')}
+function unequipItem(){S.shop.equipped='';save();render();note('Аксессуар снят!')}
+function buyItem(id){const x=SHOP.find(i=>i.id===id);if(!x||S.shop.owned.includes(id))return;if(S.shop.coins<x.price)return note('Не хватает монет!');S.shop.coins-=x.price;S.shop.owned.push(id);save();render();note('Покупка совершена! 🎉')}
 function vPet(){
-  initPet();
-  const p=S.pet,stage=petStage(p.level),nextStage=PET_FORMS.find(f=>f.level>p.level),done=PET_TASKS.filter(t=>p.done.includes(t.id)).length,xpProgress=p.xp,evolutionProgress=nextStage?Math.min(100,Math.round(((p.level-stage.level+p.xp/100)/(nextStage.level-stage.level))*100)):100;
-  return `<h1>Мой питомец 🐾</h1><div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="petface ${petEffect}">${stage.icon}</div><h2>${esc(p.name)}</h2><div class="tag">${stage.name.toUpperCase()}</div><div class="mut">Уровень ${p.level}</div><div class="petbar"><i style="width:${xpProgress}%"></i></div><b>${p.xp} / 100 XP</b><div class="mut">До следующего уровня</div><button class="btn ghost w" onclick="renamePet()">✏️ Изменить имя</button></div>
-<div class="card"><h2>♟️ Эволюция питомца</h2>${PET_FORMS.map(f=>{const unlocked=p.level>=f.level,current=stage.level===f.level;return `<div class="ach ${unlocked?'':'lock'}"><div class="achico">${unlocked?f.icon:'🔒'}</div><div style="flex:1"><b>${f.name}</b><div class="mut">Уровень ${f.level}</div>${current?'<div class="tag">ТЕКУЩАЯ ФОРМА</div>':''}</div>${unlocked?'<span class="tag">ОТКРЫТО</span>':'<span class="mut">ЗАКРЫТО</span>'}</div>`}).join('')}${nextStage?`<div style="margin-top:14px"><b>Следующая эволюция</b><div class="mut">${nextStage.icon} ${nextStage.name} · уровень ${nextStage.level}</div><div class="petbar"><i style="width:${evolutionProgress}%"></i></div><div class="mut">${evolutionProgress}% до новой формы</div></div>`:`<div class="pet" style="padding:16px"><div style="font-size:35px">👑</div><b>Максимальная эволюция!</b><div class="mut">Твой питомец стал королём!</div></div>`}</div>
-<div class="card"><h2>Забота о питомце · ${done}/${PET_TASKS.length} сегодня</h2><div class="mut" style="margin-bottom:10px">Выполняй задания, получай опыт, повышай уровень и открывай новые формы!</div>${PET_TASKS.map(t=>{const complete=p.done.includes(t.id);return `<div class="row"><span><b>${t.icon} ${t.name}</b><div class="mut">${t.desc} · +${t.xp} XP</div></span><button class="btn ${complete?'ghost':''}" ${complete?'disabled':''} onclick="petTask('${t.id}')">${complete?'Готово ✓':'Выполнить'}</button></div>`}).join('')}</div>`
+ initPet();const p=S.pet,s=petStage(),next=PET_FORMS.find(x=>x.level>p.level),activeTask=p.activeTask?PET_TASKS.find(x=>x.id===p.activeTask.id):null,equipped=SHOP.find(x=>x.id===S.shop.equipped);
+ return `<h1>🐾 Мой питомец</h1>
+ <div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="pet-visual"><div class="petface ${petEffect}" style="${skinFilter()}">${s.icon}</div>${equipped?`<div class="pet-accessory">${equipped.icon}</div>`:''}</div><h2>${esc(p.name)}</h2><div class="tag">${s.name.toUpperCase()}</div><div class="mut">Уровень ${p.level}</div><div class="bar"><i style="width:${p.xp}%"></i></div><b>${p.xp}/100 XP</b><div class="mut">До следующего уровня</div><button class="btn ghost w" onclick="renamePet()">Изменить имя</button><button class="btn ghost w" onclick="go('shop')">🛍️ Магазин аксессуаров</button><button class="btn ghost w" onclick="go('look')">🎨 Оформление</button></div>
+ <div class="card"><h2>Эволюция</h2>${PET_FORMS.map(f=>`<div class="ach ${p.level>=f.level?'':'lock'}"><div class="achico">${p.level>=f.level?f.icon:'🔒'}</div><div style="flex:1"><b>${f.name}</b><div class="mut">Уровень ${f.level}</div></div>${p.level>=f.level?'<span class="tag">ОТКРЫТО</span>':''}</div>`).join('')}${next?`<div class="mut" style="margin-top:12px">Следующая форма: ${next.icon} ${next.name} · уровень ${next.level}</div>`:'<div class="tag">МАКСИМАЛЬНЫЙ УРОВЕНЬ</div>'}</div>
+ <div class="card"><h2>🎒 Аксессуар</h2>${equipped?`Сейчас надет: ${equipped.icon} ${equipped.name}<button class="btn ghost w" onclick="unequipItem()">Снять аксессуар</button>`:'<div class="mut">Пока аксессуар не надет</div>'}<button class="btn w" onclick="go('shop')">Открыть магазин</button></div>
+ <div class="card"><h2>Забота о питомце · ${p.done.length}/${PET_TASKS.length} сегодня</h2>
+ ${activeTask?`<div class="task-active"><b>${activeTask.icon} ${activeTask.name}</b><div class="mut">${activeTask.desc}</div><div class="task-timer" id="petTimer">${formatTaskTime(p.activeTask.endsAt-Date.now())}</div><div class="task-progress"><i id="petTaskProgress" style="width:${Math.min(100,Math.max(0,(Date.now()-p.activeTask.startedAt)/(activeTask.duration*1000)*100))}%"></i></div><div class="mut" style="text-align:center">Задание выполняется. Остальные задания пока недоступны.</div></div>`:''}
+ ${PET_TASKS.map(t=>{const done=p.done.includes(t.id),running=p.activeTask?.id===t.id,blocked=!!p.activeTask&&!running;return `<div class="row ${blocked?'task-disabled':''}"><span>${t.icon} ${t.name}<div class="mut">${t.duration} сек. · +${t.xp} XP · +5 🪙</div></span><button class="btn ${done?'ghost':''}" ${done||blocked?'disabled':''} onclick="startPetTask('${t.id}')">${done?'Готово ✓':running?'В процессе':'Начать'}</button></div>`}).join('')}</div>`;
 }
-
-function vSet(){
-  return `<h1>Настройки</h1>
-  <div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length===7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div>
-  <div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватарку</button>${S.avatar?'<button class="btn ghost w" onclick="removeAvatar()">↩ Сбросить фото</button>':''}<button class="btn ghost w" onclick="rename()">✏️ Изменить имя</button></div>
-  <div class="card"><h2>🔊 Звуки приложения</h2><div class="row"><span><b>Звуковые эффекты</b><div class="mut">Звуки нажатий, привычек и наград</div></span><button class="btn ${soundEnabled?'':'ghost'}" onclick="toggleSound()">${soundEnabled?'Включены':'Выключены'}</button></div></div>
-  <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить из копии</button><button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`
+function vShop(){
+ const equipped=S.shop.equipped;
+ return `<h1>🛍️ Магазин</h1><div class="card"><div class="row"><b>Твой баланс</b><span class="coin">🪙 ${S.shop.coins}</span></div><div class="mut">Получай монеты за выполнение привычек и заботу о питомце.</div></div>
+ <div class="card"><h2>Предметы для питомца</h2>${SHOP.map(x=>{const own=S.shop.owned.includes(x.id),isOn=equipped===x.id;return `<div class="product"><div class="pic">${x.icon}</div><div class="info"><b>${x.name}</b><div class="mut">${x.desc}</div><span class="coin">${own?'Куплено':x.price+' 🪙'}</span></div>${!own?`<button class="btn" onclick="buyItem('${x.id}')">Купить</button>`:isOn?'<span class="tag">НАДЕТО</span>':`<button class="btn ghost" onclick="equipItem('${x.id}')">Надеть</button>`}</div>`}).join('')}</div>
+ <div class="card"><h2>🎒 Твой инвентарь</h2>${S.shop.owned.length?S.shop.owned.map(id=>{const x=SHOP.find(i=>i.id===id);if(!x)return '';return `<div class="row"><span>${x.icon} ${x.name}</span>${equipped===id?'<button class="btn ghost" onclick="unequipItem()">Снять</button>':`<button class="btn" onclick="equipItem('${id}')">Надеть</button>`}</div>`}).join(''):'<div class="empty">Пока пусто. Купи первый аксессуар!</div>'}</div>`;
 }
-
+function questData(){
+ const k=fmt(today()),dayDone=S.habits.filter(h=>active(h,today())&&ok(k,h)).length;
+ const daily=[{id:'q1',icon:'☑️',name:'Выполни 1 привычку',progress:Math.min(1,dayDone),goal:1,reward:15},{id:'q2',icon:'🌟',name:'Выполни 3 привычки',progress:Math.min(3,dayDone),goal:3,reward:30},{id:'q3',icon:'🐾',name:'Позаботься о питомце',progress:S.pet.done.length?1:0,goal:1,reward:15}];
+ const weekDone=Object.entries(S.log).filter(([date])=>{const d=new Date(date+'T00:00:00');return d>=mon(today())&&d<=today()}).reduce((n,[,o])=>n+Object.entries(o).filter(([id,c])=>{const h=S.habits.find(x=>x.id===id);return h&&c>=h.goal}).length,0);
+ const weekly=[{id:'w1',icon:'🔥',name:'Выполни 10 привычек за неделю',progress:Math.min(10,weekDone),goal:10,reward:80},{id:'w2',icon:'📅',name:'Отметь настроение 3 раза',progress:Math.min(3,Object.keys(S.mood).length),goal:3,reward:40}];
+ return {daily,weekly};
+}
+function claimQuest(id,reward){const key=fmt(today()),claimed=S.claimedQuests[key]||(S.claimedQuests[key]=[]);if(claimed.includes(id))return;claimed.push(id);S.shop.coins+=reward;save();celebrate();render();note('Награда получена: '+reward+' 🪙')}
+function vQuests(){
+ const q=questData(),claimed=S.claimedQuests[fmt(today())]||[];
+ const block=(title,items)=>`<div class="card"><h2>${title}</h2>${items.map(x=>{const done=x.progress>=x.goal,got=claimed.includes(x.id);return `<div class="row"><div style="flex:1"><b>${x.icon} ${x.name}</b><div class="bar"><i style="width:${Math.round(x.progress/x.goal*100)}%"></i></div><div class="mut">${x.progress}/${x.goal} · награда ${x.reward} 🪙</div></div><button class="btn ${got?'ghost':''}" ${!done||got?'disabled':''} onclick="claimQuest('${x.id}',${x.reward})">${got?'Получено':done?'Забрать':'В процессе'}</button></div>`}).join('')}</div>`;
+ return `<h1>📜 Квесты</h1><div class="card"><div class="mut">Выполняй задания, забирай монеты и покупай предметы питомцу.</div><div class="coin" style="font-size:22px">🪙 ${S.shop.coins}</div></div>${block('☀️ Ежедневные квесты',q.daily)}${block('🗓️ Недельные квесты',q.weekly)}`;
+}
+function addReminder(){
+ const s=document.createElement('div');s.className='sheet';s.innerHTML=`<div><h2>Новое напоминание</h2><label class="mut">Название</label><input id="rname" placeholder="Например, почитать"><label class="mut">Время</label><input id="rtime" type="time" value="18:00"><button class="btn w" id="rsave">Сохранить</button><button class="btn ghost w" id="rcancel">Отмена</button></div>`;
+ document.body.appendChild(s);s.onclick=e=>{if(e.target===s)s.remove()};s.querySelector('#rcancel').onclick=()=>s.remove();s.querySelector('#rsave').onclick=()=>{const name=s.querySelector('#rname').value.trim(),time=s.querySelector('#rtime').value;if(!name)return note('Введи название напоминания');S.reminders.push({id:'r'+Date.now(),name,time,enabled:true});save();s.remove();render()};
+}
+function toggleReminder(id){const r=S.reminders.find(x=>x.id===id);if(r){r.enabled=!r.enabled;save();render()}}
+function removeReminder(id){sure('Удалить напоминание?',()=>{S.reminders=S.reminders.filter(x=>x.id!==id);save();render()})}
+async function enableNotifications(){if(!('Notification'in window))return note('Этот браузер не поддерживает уведомления.');try{const p=await Notification.requestPermission();note(p==='granted'?'Уведомления разрешены.':'Разрешение на уведомления не получено.')}catch(e){note('Не удалось включить уведомления.')}}
+function checkReminders(){
+ const now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),key=fmt(now)+'_'+time;if(lastReminder===key)return;
+ const due=S.reminders.filter(r=>r.enabled&&r.time===time);if(!due.length)return;lastReminder=key;
+ due.forEach(r=>{if('Notification'in window&&Notification.permission==='granted'){try{new Notification('FocusOnMe',{body:'🔔 '+r.name})}catch(e){note('🔔 '+r.name)}}else note('🔔 Напоминание: '+r.name)});
+}
+function vReminders(){return `<h1>🔔 Напоминания</h1><div class="card"><h2>Твои напоминания</h2><div class="mut">Напоминания проверяются, пока приложение открыто. Для уведомлений при закрытом приложении потребуется сервер или Telegram-бот.</div><button class="btn w" onclick="enableNotifications()">Разрешить уведомления</button><button class="btn ghost w" onclick="addReminder()">＋ Добавить напоминание</button></div><div class="card">${S.reminders.length?S.reminders.map(r=>`<div class="row"><div style="flex:1"><b>🔔 ${esc(r.name)}</b><div class="mut">${r.time} · ${r.enabled?'Включено':'Выключено'}</div></div><button class="btn ghost" onclick="toggleReminder('${r.id}')">${r.enabled?'Выкл.':'Вкл.'}</button><button class="ed" onclick="removeReminder('${r.id}')">✕</button></div>`).join(''):'<div class="empty">Пока нет напоминаний</div>'}</div>`}
+function vAch(){
+ const row=a=>{const v=a.val(),done=v>=a.goal;return `<div class="ach ${done?'':'lock'}"><div class="achico">${done?a.icon:'🔒'}</div><div style="flex:1"><b>${a.name}</b><div class="mut">${a.desc}</div><div class="mut">${Math.min(v,a.goal)}/${a.goal}</div></div>${done?`<span class="tag">ОТКРЫТО</span><button class="ed" onclick="shareAch('${a.id}')">📤</button>`:''}</div>`};
+ const secRow=a=>a.val()>=a.goal?`<div class="ach"><div class="achico">${a.icon}</div><div style="flex:1"><b>${a.name}</b><div class="mut">${a.desc}</div><div class="mut">Награда: ${rewardText(a.reward)}</div></div><span class="tag">ОТКРЫТО</span></div>`:`<div class="ach lock"><div class="achico">❓</div><div style="flex:1"><b>Секретное достижение</b><div class="mut">Условие скрыто</div></div></div>`;
+ const normal=ACH.filter(a=>!a.secret),sec=ACH.filter(a=>a.secret);
+ return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>🏆 Достижения</h1><div class="card"><h2>Открыто ${achCount()} из ${ACH.length}</h2><div class="mut">В счёт входят и секретные достижения.</div>${normal.map(row).join('')}</div><div class="card"><h2>🕵️ Секретные · ${sec.filter(a=>a.val()>=a.goal).length}/${sec.length}</h2><div class="mut">От простого к самому сложному. За них дают монеты, фоны и скины.</div>${sec.map(secRow).join('')}</div>`;
+}
+function todayQuote(){return QUOTES[Math.floor(today()/86400000)%QUOTES.length]}
+function toggleFavQuote(){const q=todayQuote(),i=S.favQuotes.indexOf(q);if(i>=0)S.favQuotes.splice(i,1);else{S.favQuotes.push(q);playSound('success');buzz('light')}save();render()}
+function removeFavQuote(i){S.favQuotes.splice(i,1);save();render()}
+function vFav(){return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>⭐ Избранные цитаты</h1>${S.favQuotes.length?S.favQuotes.map((q,i)=>`<div class="card"><div class="quote">${esc(q)}</div><button class="btn ghost w" onclick="shareFavQuote(${i})">📤 Поделиться в Telegram</button><button class="btn danger w" onclick="removeFavQuote(${i})">Убрать из избранного</button></div>`).join(''):'<div class="card empty">⭐<br>Пока пусто. Нажми «В избранное» под мыслью дня на главной.</div>'}`}
+function vSettings(){
+ return `<h1>⚙️ Настройки</h1><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}</span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Привычек пока нет</div>'}<button class="btn w" onclick="openEdit()">＋ Добавить привычку</button></div>
+ <div class="card"><h2>Разделы</h2><button class="btn ghost w" onclick="go('ach')">🏆 Достижения</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты</button><button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="go('look')">🎨 Оформление</button></div>
+ <div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="rename()">Изменить имя</button></div>
+ <div class="card"><h2>🔊 Звуки</h2><div class="row"><span>Звуковые эффекты</span><button class="btn ${soundEnabled?'':'ghost'}" onclick="toggleSound()">${soundEnabled?'Включены':'Выключены'}</button></div></div>
+ <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить копию</button><button class="btn danger w" onclick="resetAll()">Удалить все данные</button></div>`;
+}
 function render(){
-  const views={home:vHome,today:vToday,stats:vStats,week:vWeek,pet:vPet,ach:vAchievements,set:vSet};
-  $('#app').innerHTML='<div class="screen-enter">'+views[tab]()+'</div>';
-  $('#nav').innerHTML=[['home','🏠'],['today','☑️'],['stats','📊'],['week','📋'],['pet','🐾'],['ach','🏆'],['set','⚙️']].map(([t,i])=>`<button class="${t===tab?'on':''}" onclick="go('${t}')">${i}</button>`).join('')
+ grantSecrets();applyLook();
+ const views={home:vHome,today:vToday,calendar:vCalendar,stats:vStats,week:vWeek,pet:vPet,shop:vShop,quests:vQuests,reminders:vReminders,ach:vAch,fav:vFav,notes:vNotes,ref:vRef,look:vLook,set:vSettings};
+ $('#app').innerHTML=`<div class="screen-enter">${views[tab]()}</div>`;
+ const nav=[['home','🏠'],['today','☑️'],['pet','🐾'],['stats','📊'],['set','⚙️']];
+ $('#nav').innerHTML=nav.map(([t,i])=>`<button aria-label="${t}" class="${tab===t||(t==='home'&&['ach','fav','notes','ref','look'].includes(tab))?'on':''}" onclick="go('${t}')">${i}</button>`).join('');
 }
-function go(t){tab=t;render();scrollTo(0,0)}
-function pick(k,jump){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}
+function go(t){tab=t;render();window.scrollTo(0,0);if(t==='ref')syncRef().then(()=>{if(tab==='ref')render()})}
+function pick(k,jump=false){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}
 function mo(n){calM=new Date(calM.getFullYear(),calM.getMonth()+n,1);render()}
-function wk(n){weekStart=add(weekStart,7*n);render()}
-function setMood(v){let k=fmt(today());S.mood[k]===v?delete S.mood[k]:S.mood[k]=v;save();buzz();render()}
-
-function note(t){try{if(tg&&tg.isVersionAtLeast('6.2'))return tg.showAlert(t)}catch(e){}alert(t)}
-function sure(t,cb){try{if(tg&&tg.isVersionAtLeast('6.2'))return tg.showConfirm(t,ok=>{if(ok)cb()})}catch(e){}if(confirm(t))cb()}
-function ask(title,val,okText,cb,max){
-  let s=document.createElement('div');s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};
-  s.innerHTML=`<div><h1 style="margin-top:0">${title}</h1><input type="text" id="ask" ${max?`maxlength="${max}"`:''} value="${esc(val)}"><button class="btn w" id="askok">${okText}</button><button class="btn ghost w" id="askno">Отмена</button></div>`;
-  document.body.appendChild(s);
-  let i=s.querySelector('#ask');
-  s.querySelector('#askno').onclick=()=>s.remove();
-  s.querySelector('#askok').onclick=()=>{let v=i.value;s.remove();cb(v)};
-  setTimeout(()=>{try{i.focus();i.select()}catch(e){}},50)
-}
-function rename(){ask('Ваше имя',S.name||(tg?.initDataUnsafe?.user?.first_name||''),'Сохранить',v=>{S.name=v.trim();save();render()},30)}
-function exportData(){
-  let v=JSON.stringify(S),p;
-  try{p=navigator.clipboard.writeText(v)}catch(e){p=Promise.reject()}
-  p.then(()=>note('Копия в буфере обмена')).catch(()=>ask('Выделите и скопируйте текст',v,'Закрыть',()=>{}))
-}
-function importData(){
-  ask('Вставьте резервную копию','','Восстановить',v=>{
-    if(!v)return;
-    try{
-      S=Object.assign({habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}},JSON.parse(v));
-      initPet();save();render()
-    }catch(e){note('Не удалось прочитать копию')}
-  })
-}
-function resetAll(){
-  sure('Удалить все привычки и историю?',()=>{
-    S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}};
-    save();render()
-  })
-}
-
+function wk(n){weekStart=add(weekStart,n*7);render()}
+function setMood(v){const k=fmt(today());S.mood[k]===v?delete S.mood[k]:S.mood[k]=v;save();render()}
+function rename(){ask('Твоё имя',S.name,v=>{S.name=v.trim();save();render()},30)}
+function renamePet(){ask('Имя питомца',S.pet.name,v=>{if(v.trim()){S.pet.name=v.trim();save();render()}},24)}
 function openEdit(id){
-  let old=S.habits.find(h=>h.id===id),d=old?{...old,days:[...old.days]}:{emoji:'⭐',name:'',color:COLORS[0],days:[0,1,2,3,4,5,6],goal:1},s=document.createElement('div');
-  s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};
-  const paint=()=>{
-    s.innerHTML=`<div><h1 style="margin-top:0">${old?'Изменить привычку':'Новая привычка'}</h1>${old?'':`<div class="pre">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]} ${p[1]}</button>`).join('')}</div>`}<input type="text" id="nm" maxlength="30" placeholder="Название" value="${esc(d.name)}"><input type="text" id="em" maxlength="4" placeholder="Эмодзи" value="${esc(d.emoji)}"><div class="pre">${COLORS.map(c=>`<button class="sw ${c===d.color?'on':''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div><h2>Повторять</h2><div class="pre">${DAYS.map((n,i)=>`<button class="${d.days.includes(i)?'on':''}" data-d="${i}">${n}</button>`).join('')}</div><h2>Раз в день</h2><div class="step"><button data-g="-1">−</button><b>${d.goal}</b><button data-g="1">+</button></div><div id="err" style="color:#d33;min-height:20px;font-size:14px"></div><button class="btn w" id="ok">Сохранить</button>${old?'<button class="btn ghost w" id="rm">Удалить привычку</button>':''}</div>`;
-    const keep=()=>{d.name=$('#nm').value;d.emoji=$('#em').value||'⭐'};
-    s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{let p=PRESETS[b.dataset.p];d.emoji=p[0];d.name=p[1];d.goal=p[2];paint()});
-    s.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{keep();d.color=b.dataset.c;paint()});
-    s.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{keep();let i=+b.dataset.d;d.days=d.days.includes(i)?d.days.filter(x=>x!==i):[...d.days,i].sort();paint()});
-    s.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{keep();d.goal=Math.min(99,Math.max(1,d.goal+ +b.dataset.g));paint()});
-    $('#ok').onclick=()=>{
-      keep();d.name=d.name.trim();
-      if(!d.name)return $('#err').textContent='Введите название привычки';
-      if(!d.days.length)return $('#err').textContent='Выберите хотя бы один день';
-      if(old)Object.assign(old,d);else S.habits.push({...d,id:'h'+Date.now()});
-      s.remove();save();render()
-    };
-    if(old)$('#rm').onclick=()=>sure('Удалить привычку и её историю?',()=>{
-      S.habits=S.habits.filter(h=>h.id!==id);
-      Object.keys(S.log).forEach(k=>setCnt(k,id,0));
-      save();s.remove();render()
-    })
-  };
-  document.body.appendChild(s);paint()
+ const old=S.habits.find(h=>h.id===id);let d=old?{...old,days:[...old.days]}:{emoji:'⭐',name:'',color:COLORS[0],days:[0,1,2,3,4,5,6],goal:1};
+ const s=document.createElement('div');s.className='sheet';
+ function paint(){
+  s.innerHTML=`<div><h2>${old?'Изменить привычку':'Новая привычка'}</h2>${old?'':`<div class="pre">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]} ${p[1]}</button>`).join('')}</div>`}<input id="hn" maxlength="30" placeholder="Название привычки" value="${esc(d.name)}"><input id="he" maxlength="4" placeholder="Эмодзи" value="${esc(d.emoji)}"><h2>Дни недели</h2><div class="pre">${DAYS.map((x,i)=>`<button data-day="${i}" class="${d.days.includes(i)?'on':''}">${x}</button>`).join('')}</div><h2>Количество раз в день</h2><div class="row"><button class="btn ghost" id="minus">−</button><b>${d.goal}</b><button class="btn ghost" id="plus">+</button></div><div id="err" class="mut"></div><button class="btn w" id="saveHabit">Сохранить</button>${old?'<button class="btn danger w" id="deleteHabit">Удалить привычку</button>':''}<button class="btn ghost w" id="closeHabit">Отмена</button></div>`;
+  s.querySelector('#hn').oninput=e=>d.name=e.target.value;s.querySelector('#he').oninput=e=>d.emoji=e.target.value;
+  s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const p=PRESETS[+b.dataset.p];d.emoji=p[0];d.name=p[1];d.goal=p[2];paint()});
+  s.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{const i=+b.dataset.day;d.days=d.days.includes(i)?d.days.filter(x=>x!==i):[...d.days,i].sort();paint()});
+  s.querySelector('#minus').onclick=()=>{d.goal=Math.max(1,d.goal-1);paint()};s.querySelector('#plus').onclick=()=>{d.goal=Math.min(99,d.goal+1);paint()};
+  s.querySelector('#closeHabit').onclick=()=>s.remove();
+  s.querySelector('#saveHabit').onclick=()=>{d.name=d.name.trim();d.emoji=d.emoji||'⭐';if(!d.name)return s.querySelector('#err').textContent='Введи название привычки';if(!d.days.length)return s.querySelector('#err').textContent='Выбери хотя бы один день';if(old)Object.assign(old,d);else S.habits.push({...d,id:'h'+Date.now()});save();s.remove();render()};
+  if(old)s.querySelector('#deleteHabit').onclick=()=>sure('Удалить привычку и историю?',()=>{S.habits=S.habits.filter(h=>h.id!==id);Object.keys(S.log).forEach(k=>{delete S.log[k][id];if(!Object.keys(S.log[k]).length)delete S.log[k]});Object.keys(S.notes).forEach(k=>{delete S.notes[k][id];if(!Object.keys(S.notes[k]).length)delete S.notes[k]});save();s.remove();render()});
+ }
+ document.body.appendChild(s);s.onclick=e=>{if(e.target===s)s.remove()};paint();
+}
+function exportData(){const v=JSON.stringify(S);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Резервная копия скопирована')).catch(()=>ask('Скопируй текст',v,()=>{},10000));else ask('Скопируй текст',v,()=>{},10000)}
+function importData(){ask('Вставь резервную копию','',v=>{try{S=Object.assign(S,JSON.parse(v));normalize();initPet();save();render();if(S.pet.activeTask)startPetTimer();note('Данные восстановлены')}catch(e){note('Не удалось прочитать копию')}},10000)}
+function resetAll(){sure('Удалить все привычки, достижения и историю?',()=>{if(petTimerInterval){clearInterval(petTimerInterval);petTimerInterval=null}S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null},shop:{coins:0,owned:[],equipped:''},reminders:[],claimedQuests:{},favQuotes:[],notes:{},moodNotes:{},ref:{code:'',by:'',invited:0,claimed:[]},shares:0,sx:{night:0,early:0,got:[]},look:{bg:'default',skin:'default',bgs:['default'],skins:['default']}};save();render()})}
+function showApp(){
+ $('#gate').style.display='none';$('#banner').style.display='block';$('#nav').style.display='flex';$('#app').style.display='block';
+ if(!window.__loaded){window.__loaded=true;load()}
+ if(!reminderTimer)reminderTimer=setInterval(checkReminders,15000);
+ handleStartParam();
 }
 
-// Начальный экран
-function showGate(){
-  $('#app').style.display='none';
-  $('#nav').style.display='none';
-  $('#adBanner').style.display='none';
-  $('#gate').style.display='flex'
+/* ===== 50 НОВЫХ ДОСТИЖЕНИЙ ===== */
+const EXTRA_ACH = [
+  ['a01','🌱','Начало пути','Создай первую привычку',1,()=>S.habits.length],
+  ['a02','🧩','Архитектор','Создай 5 привычек',5,()=>S.habits.length],
+  ['a03','🏗️','Строитель системы','Создай 10 привычек',10,()=>S.habits.length],
+  ['a04','📚','Коллекционер','Создай 15 привычек',15,()=>S.habits.length],
+  ['a05','🌈','Разнообразие','Создай 20 привычек',20,()=>S.habits.length],
+  ['a06','⭐','Первые пять','Выполни 5 привычек',5,()=>completed()],
+  ['a07','🔥','Десять побед','Выполни 10 привычек',10,()=>completed()],
+  ['a08','🏅','Тридцать побед','Выполни 30 привычек',30,()=>completed()],
+  ['a09','💎','Пятьдесят побед','Выполни 50 привычек',50,()=>completed()],
+  ['a10','👑','Сто побед','Выполни 100 привычек',100,()=>completed()],
+  ['a11','🏆','Двести побед','Выполни 200 привычек',200,()=>completed()],
+  ['a12','🚀','Триста побед','Выполни 300 привычек',300,()=>completed()],
+  ['a13','🌟','Пятьсот побед','Выполни 500 привычек',500,()=>completed()],
+  ['a14','🎖️','Тысяча побед','Выполни 1000 привычек',1000,()=>completed()],
+  ['a15','💜','Настоящий герой','Выполни 1500 привычек',1500,()=>completed()],
+  ['a16','📅','Три дня','Серия привычки 3 дня',3,()=>Math.max(0,...S.habits.map(streak))],
+  ['a17','🗓️','Неделя','Серия привычки 7 дней',7,()=>Math.max(0,...S.habits.map(streak))],
+  ['a18','🌙','Две недели','Серия привычки 14 дней',14,()=>Math.max(0,...S.habits.map(streak))],
+  ['a19','☀️','Месяц усилий','Серия привычки 30 дней',30,()=>Math.max(0,...S.habits.map(streak))],
+  ['a20','🦁','Несгибаемый','Серия привычки 60 дней',60,()=>Math.max(0,...S.habits.map(streak))],
+  ['a21','🐉','Легендарная серия','Серия привычки 100 дней',100,()=>Math.max(0,...S.habits.map(streak))],
+  ['a22','🌍','Полгода','Серия привычки 180 дней',180,()=>Math.max(0,...S.habits.map(streak))],
+  ['a23','♾️','Без остановки','Серия привычки 365 дней',365,()=>Math.max(0,...S.habits.map(streak))],
+  ['a24','😊','Настроение','Отметь настроение 1 раз',1,()=>Object.keys(S.mood).length],
+  ['a25','🌸','Самонаблюдение','Отметь настроение 10 раз',10,()=>Object.keys(S.mood).length],
+  ['a26','🦋','Знакомство с собой','Отметь настроение 30 раз',30,()=>Object.keys(S.mood).length],
+  ['a27','🌻','Осознанность','Отметь настроение 50 раз',50,()=>Object.keys(S.mood).length],
+  ['a28','🌺','Сто наблюдений','Отметь настроение 100 раз',100,()=>Object.keys(S.mood).length],
+  ['a29','🐾','Знакомство с питомцем','Достигни 2 уровня питомца',2,()=>S.pet.level],
+  ['a30','🐴','Питомец растёт','Достигни 5 уровня питомца',5,()=>S.pet.level],
+  ['a31','🦄','Волшебная эволюция','Достигни 10 уровня питомца',10,()=>S.pet.level],
+  ['a32','🐲','Сильный питомец','Достигни 15 уровня питомца',15,()=>S.pet.level],
+  ['a33','👑','Королевский питомец','Достигни 25 уровня питомца',25,()=>S.pet.level],
+  ['a34','🥕','Забота','Заверши 1 задание питомца',1,()=>petTasksTotal()],
+  ['a35','🎾','Игровой друг','Заверши 5 заданий питомца',5,()=>petTasksTotal()],
+  ['a36','🌳','Любитель прогулок','Заверши 10 заданий питомца',10,()=>petTasksTotal()],
+  ['a37','🧠','Тренер','Заверши 25 заданий питомца',25,()=>petTasksTotal()],
+  ['a38','🐕','Лучший друг','Заверши 50 заданий питомца',50,()=>petTasksTotal()],
+  ['a39','🪙','Первые монеты','Накопи 50 монет',50,()=>S.shop.coins],
+  ['a40','💰','Копилка','Накопи 100 монет',100,()=>S.shop.coins],
+  ['a41','💸','Богач','Накопи 250 монет',250,()=>S.shop.coins],
+  ['a42','🤑','Состояние','Накопи 500 монет',500,()=>S.shop.coins],
+  ['a43','🏦','Банкир','Накопи 1000 монет',1000,()=>S.shop.coins],
+  ['a44','🎁','Первая покупка','Купи аксессуар',1,()=>S.shop.owned.length],
+  ['a45','🛍️','Шопоголик','Купи 3 аксессуара',3,()=>S.shop.owned.length],
+  ['a46','💎','Коллекция','Купи все аксессуары',SHOP.length,()=>S.shop.owned.length],
+  ['a47','📜','Первый квест','Забери награду за квест',1,()=>questsClaimed()],
+  ['a48','🧭','Искатель приключений','Забери 5 наград за квесты',5,()=>questsClaimed()],
+  ['a49','⚡','Мастер квестов','Забери 20 наград за квесты',20,()=>questsClaimed()],
+  ['a50','🌌','Абсолютный прогресс','Выполни 2000 привычек',2000,()=>completed()]
+];
+function petTasksTotal(){
+ return Number(S.pet.totalTasks||0);
 }
-function showApp(){
-  $('#gate').style.display='none';
-  $('#app').style.display='block';
-  $('#nav').style.display='flex';
-  $('#adBanner').style.display='block';
-  if(!window.__appLoaded){
-    window.__appLoaded=true;
-    load(()=>{initPet();render()})
+function questsClaimed(){
+ return Object.values(S.claimedQuests||{}).reduce(
+  (n,arr)=>n+(Array.isArray(arr)?arr.length:0),0
+ );
+}
+EXTRA_ACH.forEach(([id,icon,name,desc,goal,val])=>{
+ ACH.push({id,icon,name,desc,goal,val});
+});
+/* ===== СЧЁТЧИК ЗАДАНИЙ ПИТОМЦА ===== */
+const originalFinishPetTask = finishPetTask;
+finishPetTask = function(){
+ const task=S.pet.activeTask;
+ const before=S.pet.done.length;
+ originalFinishPetTask();
+ if(task && S.pet.done.length>before){
+  S.pet.totalTasks=(S.pet.totalTasks||0)+1;
+  save();
+ }
+};
+/* ===== СМЕНА АВАТАРА ===== */
+function changeAvatar(){
+ const picker=document.createElement('input');
+ picker.type='file';
+ picker.accept='image/*';
+ picker.onchange=()=>{
+  const file=picker.files?.[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){
+   note('Выбери изображение.');
+   return;
   }
+  if(file.size>5*1024*1024){
+   note('Размер изображения не должен превышать 5 МБ.');
+   return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const img=new Image();
+   img.onload=()=>{
+    const canvas=document.createElement('canvas');
+    const max=400;
+    const scale=Math.min(1,max/Math.max(img.width,img.height));
+    canvas.width=Math.round(img.width*scale);
+    canvas.height=Math.round(img.height*scale);
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    S.avatar=canvas.toDataURL('image/jpeg',0.82);
+    save();
+    render();
+    note('Аватар успешно изменён! 💜');
+   };
+   img.onerror=()=>note('Не удалось открыть изображение.');
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ };
+ picker.click();
 }
-$('#continueBtn').addEventListener('click',showApp);
-showGate();
+function removeAvatar(){
+ sure('Убрать текущий аватар?',()=>{
+  S.avatar='';
+  save();
+  render();
+  note('Аватар удалён.');
+ });
+}
+/* ===== ОБНОВЛЕНИЕ ПРОФИЛЯ ===== */
+const oldVHome=vHome;
+vHome=function(){
+ const html=oldVHome();
+ return html.replace(
+  '<button class="ed" onclick="rename()">✏️</button>',
+  '<div style="display:flex;gap:5px"><button class="ed" onclick="changeAvatar()" title="Изменить аватар">📷</button><button class="ed" onclick="rename()">✏️</button></div>'
+ );
+};
+/* ===== ОБНОВЛЕНИЕ НАСТРОЕК ===== */
+const oldVSettings=vSettings;
+vSettings=function(){
+ const html=oldVSettings();
+ return html.replace(
+  '<button class="btn ghost w" onclick="rename()">Изменить имя</button>',
+  '<button class="btn ghost w" onclick="rename()">Изменить имя</button>'+
+  '<button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватар</button>'+
+  '<button class="btn ghost w" onclick="removeAvatar()">🗑️ Удалить аватар</button>'
+ );
+};
+/* ===== СОХРАНЕНИЕ СЧЁТЧИКА ПИТОМЦА ===== */
+const oldNormalize=normalize;
+normalize=function(){
+ oldNormalize();
+ if(!S.pet)S.pet={name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null};
+ S.pet.totalTasks=Math.max(0,Number(S.pet.totalTasks)||0);
+};
+
+/* ===== ЗАМЕТКИ, ПОДЕЛИТЬСЯ, РЕФЕРАЛЫ ===== */
+const BOT_USERNAME='YOUR_BOT_USERNAME'; // username бота без @
+const REF_API=''; // адрес сервера для учёта приглашений (необязательно)
+const INVITEE_BONUS=50;
+const REF_REWARDS=[{n:1,coins:50},{n:3,coins:150},{n:5,coins:300},{n:10,coins:700}];
+function botReady(){return BOT_USERNAME&&BOT_USERNAME!=='YOUR_BOT_USERNAME'}
+function appLink(){return botReady()?'https://t.me/'+BOT_USERNAME:'https://t.me/focus_iron'}
+function refLink(){return botReady()?'https://t.me/'+BOT_USERNAME+'?startapp=ref_'+S.ref.code:appLink()}
+function notesTotal(){return Object.values(S.notes).reduce((n,o)=>n+Object.keys(o).length,0)}
+function moodNotesTotal(){return Object.keys(S.moodNotes).length}
+function withAch(fn){
+ const before=ACH.filter(a=>a.val()>=a.goal).map(a=>a.id);
+ fn();save();render();
+ const newly=ACH.filter(a=>!a.secret&&a.val()>=a.goal&&!before.includes(a.id));
+ if(newly.length){celebrate();setTimeout(()=>note('🏆 Новое достижение!\n'+newly.map(a=>a.icon+' '+a.name).join('\n')),250)}
+}
+function askText(title,value,callback,max=300){
+ const s=document.createElement('div');s.className='sheet';
+ s.innerHTML=`<div><h2>${esc(title)}</h2><textarea maxlength="${max}" placeholder="Напиши пару слов…">${esc(value)}</textarea><div class="mut">До ${max} символов. Пустой текст удалит заметку.</div><button class="btn w" id="tOk">Сохранить</button><button class="btn ghost w" id="tNo">Отмена</button></div>`;
+ s.onclick=e=>{if(e.target===s)s.remove()};document.body.appendChild(s);
+ s.querySelector('#tNo').onclick=()=>s.remove();
+ s.querySelector('#tOk').onclick=()=>{const v=s.querySelector('textarea').value.trim();s.remove();callback(v)};
+}
+function editNote(k,id){
+ const h=S.habits.find(x=>x.id===id);if(!h)return;
+ askText((h.emoji||'')+' '+h.name+' · заметка',(S.notes[k]||{})[id]||'',v=>{
+  withAch(()=>{if(v){(S.notes[k]||(S.notes[k]={}))[id]=v}else if(S.notes[k]){delete S.notes[k][id];if(!Object.keys(S.notes[k]).length)delete S.notes[k]}});
+ });
+}
+function editMoodNote(k=fmt(today())){
+ askText('Заметка к настроению',S.moodNotes[k]||'',v=>{
+  withAch(()=>{if(v)S.moodNotes[k]=v;else delete S.moodNotes[k]});
+ });
+}
+function vNotes(){
+ const keys=Array.from(new Set([...Object.keys(S.notes),...Object.keys(S.moodNotes)])).sort().reverse();
+ const body=keys.map(k=>{
+  const d=new Date(k+'T00:00:00'),title=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  const mood=S.mood[k]?MOODS[S.mood[k]-1]+' ':'';
+  const mn=S.moodNotes[k]?`<div class="row"><div style="flex:1"><b>${mood}Настроение</b><span class="nt">${esc(S.moodNotes[k])}</span></div><button class="ed" onclick="editMoodNote('${k}')">✏️</button></div>`:'';
+  const hn=Object.entries(S.notes[k]||{}).map(([id,t])=>{const h=S.habits.find(x=>x.id===id);if(!h)return '';return `<div class="row"><div style="flex:1"><b>${h.emoji} ${esc(h.name)}</b><span class="nt">${esc(t)}</span></div><button class="ed" onclick="editNote('${k}','${id}')">✏️</button></div>`}).join('');
+  return mn||hn?`<div class="card"><h2>${title}</h2>${mn}${hn}</div>`:'';
+ }).join('');
+ return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>📓 Дневник заметок</h1>${body||'<div class="card empty">📓<br>Пока нет заметок. Добавь их кнопкой 📝 у привычки или под настроением на главной.</div>'}`;
+}
+/* --- Поделиться --- */
+function shareTG(text,url){
+ const link='https://t.me/share/url?url='+encodeURIComponent(url||appLink())+'&text='+encodeURIComponent(text);
+ try{if(tg?.openTelegramLink)tg.openTelegramLink(link);else window.open(link,'_blank')}catch(e){window.open(link,'_blank')}
+ withAch(()=>{S.shares++});
+}
+function shareQuote(){shareTG('💜 «'+todayQuote()+'»\n— FocusOnMe',refLink())}
+function shareFavQuote(i){const q=S.favQuotes[i];if(q)shareTG('💜 «'+q+'»\n— FocusOnMe',refLink())}
+function shareAch(id){const a=ACH.find(x=>x.id===id);if(a)shareTG('🏆 Я открыл достижение «'+a.name+'» '+a.icon+' в FocusOnMe!',refLink())}
+function shareProgress(){
+ const best=Math.max(0,...S.habits.map(streak));
+ shareTG('💜 Мой прогресс в FocusOnMe:\n✅ Выполнено привычек: '+completed()+'\n🔥 Лучшая серия: '+best+' дн.\n🐾 Уровень питомца: '+S.pet.level+'\n🏆 Достижений: '+achCount()+'/'+ACH.length,refLink());
+}
+/* --- Рефералы --- */
+function applyRef(code){
+ code=String(code||'').trim().replace(/^ref_/,'');
+ if(!code)return note('Введи код друга');
+ if(S.ref.by)return note('Ты уже использовал код приглашения.');
+ if(code===S.ref.code)return note('Нельзя использовать свой код.');
+ withAch(()=>{S.ref.by=code;S.shop.coins+=INVITEE_BONUS});
+ note('🎁 Бонус за приглашение: +'+INVITEE_BONUS+' 🪙');
+ if(REF_API){try{fetch(REF_API+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({referrer:code,user:S.ref.code})}).catch(()=>{})}catch(e){}}
+}
+function handleStartParam(){
+ const p=tg?.initDataUnsafe?.start_param;
+ if(p&&String(p).startsWith('ref_')&&!S.ref.by&&String(p).slice(4)!==S.ref.code)applyRef(p);
+}
+async function syncRef(){
+ if(!REF_API)return;
+ try{const r=await fetch(REF_API+'/count?code='+encodeURIComponent(S.ref.code));const d=await r.json();const n=Number(d.invited);if(Number.isFinite(n)&&n>S.ref.invited){withAch(()=>{S.ref.invited=n})}}catch(e){}
+}
+function enterRefCode(){ask('Код друга','',v=>applyRef(v),40)}
+function copyRef(){
+ const v=refLink();
+ if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Ссылка скопирована')).catch(()=>ask('Скопируй ссылку',v,()=>{},300));
+ else ask('Скопируй ссылку',v,()=>{},300);
+}
+function shareInvite(){
+ if(!botReady())return note('Сначала укажи BOT_USERNAME в коде приложения.');
+ shareTG('💜 Присоединяйся к FocusOnMe — трекер привычек с питомцем! Получи +'+INVITEE_BONUS+' 🪙 по моей ссылке.',refLink());
+}
+function claimRef(n){
+ const r=REF_REWARDS.find(x=>x.n===n);if(!r||S.ref.invited<n||S.ref.claimed.includes(n))return;
+ withAch(()=>{S.ref.claimed.push(n);S.shop.coins+=r.coins});
+ celebrate();note('Награда получена: '+r.coins+' 🪙');
+}
+function vRef(){
+ const r=S.ref;
+ return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>👥 Пригласить друзей</h1>
+ <div class="card"><h2>Твоя ссылка</h2><div class="mut">Друг получит +${INVITEE_BONUS} 🪙 при входе по ссылке, а ты — награды за приглашённых.</div><div class="quote" style="font-size:13px;word-break:break-all;margin-top:10px">${esc(refLink())}</div><div class="mut" style="margin-top:8px">Твой код: <b>${esc(r.code)}</b></div><button class="btn w" onclick="shareInvite()">📤 Отправить в Telegram</button><button class="btn ghost w" onclick="copyRef()">📋 Скопировать ссылку</button></div>
+ <div class="card"><h2>Награды за друзей · приглашено ${r.invited}</h2>${REF_REWARDS.map(x=>{const done=r.invited>=x.n,got=r.claimed.includes(x.n);return `<div class="row"><div style="flex:1"><b>👤 ${x.n} ${x.n===1?'друг':x.n<5?'друга':'друзей'}</b><div class="bar"><i style="width:${Math.round(Math.min(r.invited,x.n)/x.n*100)}%"></i></div><div class="mut">${Math.min(r.invited,x.n)}/${x.n} · награда ${x.coins} 🪙</div></div><button class="btn ${got?'ghost':''}" ${!done||got?'disabled':''} onclick="claimRef(${x.n})">${got?'Получено':done?'Забрать':'В процессе'}</button></div>`}).join('')}</div>
+ <div class="card"><h2>Меня пригласили</h2>${r.by?`<div class="mut">Ты уже использовал код приглашения ✓</div>`:`<div class="mut">Есть код друга? Введи его и получи +${INVITEE_BONUS} 🪙.</div><button class="btn ghost w" onclick="enterRefCode()">Ввести код друга</button>`}</div>`;
+}
+[
+ ['n01','📝','Первая заметка','Добавь заметку к привычке',1,()=>notesTotal()],
+ ['n02','🗒️','Записная книжка','Добавь 10 заметок к привычкам',10,()=>notesTotal()],
+ ['n03','📓','Летописец','Добавь 50 заметок к привычкам',50,()=>notesTotal()],
+ ['n04','💭','Мысли о дне','Добавь заметку к настроению',1,()=>moodNotesTotal()],
+ ['n05','📔','Личный дневник','Добавь 10 заметок к настроению',10,()=>moodNotesTotal()],
+ ['n06','📖','Хранитель эмоций','Добавь 30 заметок к настроению',30,()=>moodNotesTotal()],
+ ['s01','📤','Поделился','Поделись чем-нибудь в Telegram',1,()=>S.shares],
+ ['s02','📣','Рассказчик','Поделись 5 раз',5,()=>S.shares],
+ ['s03','🌐','Амбассадор','Поделись 20 раз',20,()=>S.shares],
+ ['r01','🎉','По приглашению','Присоединись по коду друга',1,()=>S.ref.by?1:0],
+ ['r02','🤝','Первый друг','Пригласи 1 друга',1,()=>S.ref.invited],
+ ['r03','👥','Компания','Пригласи 3 друзей',3,()=>S.ref.invited],
+ ['r04','🎈','Душа компании','Пригласи 5 друзей',5,()=>S.ref.invited],
+ ['r05','🌟','Лидер сообщества','Пригласи 10 друзей',10,()=>S.ref.invited]
+].forEach(([id,icon,name,desc,goal,val])=>ACH.push({id,icon,name,desc,goal,val}));
+
+/* ===== СЕКРЕТНЫЕ ДОСТИЖЕНИЯ, ФОНЫ И СКИНЫ ===== */
+const BGS=[
+ {id:'default',name:'Фиолетовый',css:'radial-gradient(ellipse at top,#211033 0,#090611 55%)'},
+ {id:'dusk',name:'Сумерки',css:'radial-gradient(ellipse at top,#4a1d57 0,#1a0b2e 45%,#07040d 100%)'},
+ {id:'aurora',name:'Аврора',css:'linear-gradient(160deg,#07131f 0,#0f3d3a 40%,#3b1a6b 80%,#090611 100%)'},
+ {id:'cosmos',name:'Космос',css:'radial-gradient(circle at 20% 15%,#4b1d8f 0,transparent 35%),radial-gradient(circle at 80% 70%,#0d4d7a 0,transparent 40%),#04020a'}
+];
+const SKINS=[
+ {id:'default',name:'Классический',filter:''},
+ {id:'neon',name:'Неон',filter:'hue-rotate(120deg) saturate(1.6) drop-shadow(0 0 17px #3bffb0)'},
+ {id:'gold',name:'Золотой',filter:'sepia(1) saturate(4) hue-rotate(-10deg) drop-shadow(0 0 17px #ffd77b)'},
+ {id:'cosmic',name:'Космический',filter:'hue-rotate(200deg) saturate(2) drop-shadow(0 0 20px #5ad0ff)'}
+];
+function applyLook(){const b=BGS.find(x=>x.id===S.look.bg)||BGS[0];document.body.style.background=b.css;document.body.style.backgroundAttachment='fixed'}
+function skinFilter(){const k=SKINS.find(x=>x.id===S.look.skin);return k&&k.filter?'filter:'+k.filter:''}
+function rewardText(r){r=r||{};const a=[];if(r.coins)a.push('+'+r.coins+' 🪙');if(r.bg)a.push('фон «'+BGS.find(x=>x.id===r.bg).name+'»');if(r.skin)a.push('скин «'+SKINS.find(x=>x.id===r.skin).name+'»');return a.join(', ')}
+function setBg(id){if(S.look.bgs.includes(id)){S.look.bg=id;save();render()}}
+function setSkin(id){if(S.look.skins.includes(id)){S.look.skin=id;save();render()}}
+function vLook(){
+ const lockRow=`<div class="row"><span>🔒 Скрыто</span><span class="mut">Секретная награда</span></div>`;
+ const bgs=BGS.map(x=>S.look.bgs.includes(x.id)?`<div class="row"><div style="display:flex;align-items:center;gap:10px"><div style="width:42px;height:42px;border-radius:12px;border:1px solid #68418b;background:${x.css}"></div><b>${x.name}</b></div>${S.look.bg===x.id?'<span class="tag">ВЫБРАНО</span>':`<button class="btn ghost" onclick="setBg('${x.id}')">Выбрать</button>`}</div>`:lockRow).join('');
+ const skins=SKINS.map(x=>S.look.skins.includes(x.id)?`<div class="row"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:30px;width:42px;text-align:center;${x.filter?'filter:'+x.filter:''}">${petStage().icon}</div><b>${x.name}</b></div>${S.look.skin===x.id?'<span class="tag">ВЫБРАНО</span>':`<button class="btn ghost" onclick="setSkin('${x.id}')">Выбрать</button>`}</div>`:lockRow).join('');
+ return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>🎨 Оформление</h1><div class="card"><h2>Фоны</h2>${bgs}</div><div class="card"><h2>Скины питомца</h2>${skins}</div>`;
+}
+let sxBusy=false;
+function grantSecrets(){
+ if(sxBusy||!S.sx||!S.look)return;
+ const fresh=ACH.filter(a=>a.secret&&a.val()>=a.goal&&!S.sx.got.includes(a.id));
+ if(!fresh.length)return;
+ sxBusy=true;const lines=[];
+ fresh.forEach(a=>{
+  S.sx.got.push(a.id);const r=a.reward||{};
+  if(r.coins)S.shop.coins+=r.coins;
+  if(r.bg&&!S.look.bgs.includes(r.bg))S.look.bgs.push(r.bg);
+  if(r.skin&&!S.look.skins.includes(r.skin))S.look.skins.push(r.skin);
+  lines.push(a.icon+' '+a.name+' — '+rewardText(r));
+ });
+ save();
+ setTimeout(()=>{sxBusy=false;celebrate();note('🕵️ Секретное достижение!\n'+lines.join('\n'));render()},300);
+}
+function dayCounts(){
+ return Object.keys(S.log).map(k=>{
+  const d=new Date(k+'T00:00:00'),hs=S.habits.filter(h=>active(h,d)),done=S.habits.filter(h=>ok(k,h)).length;
+  return {planned:hs.length,allDone:hs.length>0&&hs.every(h=>ok(k,h)),done};
+ });
+}
+function maxNoteLen(){
+ const a=[];Object.values(S.notes).forEach(o=>Object.values(o).forEach(t=>a.push(String(t).length)));
+ Object.values(S.moodNotes).forEach(t=>a.push(String(t).length));
+ return Math.max(0,...a);
+}
+const SECRETS=[
+ ['x01','🦉','Ночная сова','Выполни привычку глубокой ночью (00:00–05:00)',()=>S.sx.night>=1,{coins:100}],
+ ['x02','🌅','Ранняя пташка','Выполни привычку на рассвете (05:00–07:00)',()=>S.sx.early>=1,{coins:150}],
+ ['x03','🧙','Мудрец','Собери 10 цитат в избранное',()=>S.favQuotes.length>=10,{coins:200}],
+ ['x04','🌗','Идеальный день','Выполни все привычки дня, когда их 3 или больше',()=>dayCounts().some(x=>x.planned>=3&&x.allDone),{coins:150,bg:'dusk'}],
+ ['x05','✒️','Писатель','Напиши заметку длиннее 200 символов',()=>maxNoteLen()>=200,{coins:250,skin:'neon'}],
+ ['x06','🐕','Верный друг','Выполни все 4 задания питомца за один день',()=>S.pet.done.length>=PET_TASKS.length,{coins:400}],
+ ['x07','🏃','Марафонец','Держи серию привычки 30 дней',()=>Math.max(0,...S.habits.map(streak))>=30,{coins:500,bg:'aurora'}],
+ ['x08','⚡','Десять за день','Выполни 10 привычек за один день',()=>dayCounts().some(x=>x.done>=10),{coins:600,skin:'gold'}],
+ ['x09','🏛️','Хранитель привычек','Выполни 500 привычек',()=>completed()>=500,{coins:2000}],
+ ['x10','🌌','Легенда FocusOnMe','Открой 60 обычных достижений',()=>ACH.filter(a=>!a.secret&&a.val()>=a.goal).length>=60,{coins:3000,bg:'cosmos',skin:'cosmic'}]
+];
+SECRETS.forEach(([id,icon,name,desc,f,reward])=>ACH.push({id,icon,name,desc,goal:1,val:()=>f()?1:0,secret:true,reward}));
+/* ===== ГОТОВО ===== */
+
+load();$('#app').style.display='none';$('#nav').style.display='none';
 </script>
 </body>
 </html>
