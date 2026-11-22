@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -12,61 +11,156 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,Roboto,system-ui,sans-serif}
 #app{max-width:520px;margin:0 auto;padding:14px 16px calc(110px + env(safe-area-inset-bottom))}
-h1{font-size:20px;margin:6px 0 14px;text-align:center}h2{font-size:16px;margin:0 0 10px}
+h1{font-size:20px;margin:6px 0 14px;text-align:center}
+h2{font-size:16px;margin:0 0 10px}
 .card{background:var(--card);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
-.mut{color:var(--mut);font-size:12px}.week{display:flex;justify-content:space-between;margin-bottom:16px}
+.mut{color:var(--mut);font-size:12px}
+.week{display:flex;justify-content:space-between;margin-bottom:16px}
 .day{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut);padding:6px 2px;border-radius:24px;flex:1;cursor:pointer}
-.day.sel{outline:1.5px solid var(--soft)}.dot{width:38px;height:38px;border-radius:50%;border:2px solid var(--soft);display:grid;place-items:center;font-size:14px;color:var(--tx)}
-.dot.full{background:var(--ac);border-color:var(--ac);color:#fff}.dot.part{border-color:var(--ac)}.dot.off{border-style:dashed;opacity:.5}
-.h{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer}
-.h:active{transform:scale(.985)}.h .e{font-size:24px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
-.h .n{flex:1;font-weight:600;min-width:0}.h.on .n{text-decoration:line-through;opacity:.55}
+.day.sel{outline:1.5px solid var(--soft)}
+.dot{width:38px;height:38px;border-radius:50%;border:2px solid var(--soft);display:grid;place-items:center;font-size:14px;color:var(--tx)}
+.dot.full{background:var(--ac);border-color:var(--ac);color:#fff}
+.dot.part{border-color:var(--ac)}
+.dot.off{border-style:dashed;opacity:.5}
+.h{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.h:active{transform:scale(.96)}
+.h .e{font-size:24px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
+.h .n{flex:1;font-weight:600;min-width:0}
+.h.on .n{text-decoration:line-through;opacity:.55}
 .chk{min-width:32px;height:32px;padding:0 6px;border-radius:11px;border:2px solid var(--line);display:grid;place-items:center;color:var(--mut);font-weight:700;font-size:13px}
-.h.on .chk{border:0;color:#fff}.ed{border:0;background:none;color:var(--mut);font-size:18px;padding:4px;cursor:pointer}
-.empty{text-align:center;color:var(--mut);padding:35px 20px}.empty b{display:block;font-size:48px;margin-bottom:8px}
-.btn{border:0;border-radius:18px;padding:13px 18px;font:600 15px inherit;font-family:inherit;color:#fff;background:linear-gradient(135deg,#ee6677,#e9728f);cursor:pointer}
-.btn.ghost{background:var(--soft);color:var(--ac)}.btn.w{width:100%;margin-top:8px}
+.h.on .chk{border:0;color:#fff;animation:checkPop .35s ease}
+.ed{border:0;background:none;color:var(--mut);font-size:18px;padding:4px;cursor:pointer}
+.empty{text-align:center;color:var(--mut);padding:35px 20px}
+.empty b{display:block;font-size:48px;margin-bottom:8px}
+.btn{border:0;border-radius:18px;padding:13px 18px;font:600 15px inherit;font-family:inherit;color:#fff;background:linear-gradient(135deg,#ee6677,#e9728f);cursor:pointer;transition:transform .15s ease,filter .15s ease}
+.btn:active{transform:scale(.96);filter:brightness(.92)}
+.btn.ghost{background:var(--soft);color:var(--ac)}
+.btn.w{width:100%;margin-top:8px}
 nav{position:fixed;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:500px;margin:auto;background:var(--card);border-radius:30px;display:flex;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:5}
-nav button{flex:1;border:0;background:none;font-size:19px;padding:10px 0;border-radius:24px;filter:grayscale(1);opacity:.55;cursor:pointer}
+nav button{flex:1;border:0;background:none;font-size:19px;padding:10px 0;border-radius:24px;filter:grayscale(1);opacity:.55;cursor:pointer;transition:transform .15s ease,background .2s ease}
+nav button:active{transform:scale(.9)}
 nav button.on{background:var(--soft);filter:none;opacity:1}
-.moods{display:flex;justify-content:space-between}.moods button{border:2px solid transparent;background:var(--bg);border-radius:50%;width:48px;height:48px;font-size:25px;cursor:pointer}
+.moods{display:flex;justify-content:space-between}
+.moods button{border:2px solid transparent;background:var(--bg);border-radius:50%;width:48px;height:48px;font-size:25px;cursor:pointer;transition:transform .2s ease}
+.moods button:active{transform:scale(.9)}
 .moods button.on{border-color:var(--ac);background:var(--soft)}
 .mrow{display:flex;justify-content:space-between;margin-top:12px;text-align:center;font-size:12px;color:var(--mut)}
-.mrow div{flex:1}.mrow span{display:block;font-size:22px;min-height:30px}
+.mrow div{flex:1}
+.mrow span{display:block;font-size:22px;min-height:30px}
 .quote{border-radius:20px;padding:30px 18px;text-align:center;color:#fff;font-size:18px;font-weight:600;background:linear-gradient(135deg,#9fd0e6,#f0a8b8);text-shadow:0 2px 8px #0003}
-.prof{display:flex;align-items:center;gap:14px;margin-bottom:14px}.ava{width:62px;height:62px;border-radius:50%;border:3px solid #f1cf7a;background:var(--soft);display:grid;place-items:center;font-size:28px;overflow:hidden;flex:none;cursor:pointer}
-.ava img{width:100%;height:100%;object-fit:cover}.ring{width:160px;height:160px;border-radius:50%;margin:6px auto 14px;display:grid;place-items:center;background:conic-gradient(var(--ac) calc(var(--p)*1%),var(--soft) 0)}
-.ring div{width:130px;height:130px;border-radius:50%;background:var(--card);display:grid;place-content:center;text-align:center}.ring b{font-size:32px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}.stats b{font-size:26px;display:block}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}.cal .dot{width:100%;height:auto;aspect-ratio:1;font-size:13px;cursor:pointer}.cal .out{opacity:.3}
-.navrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:600}.navrow button{border:0;background:var(--soft);color:var(--ac);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
-.grid{overflow-x:auto}table{border-collapse:separate;border-spacing:4px;width:100%;font-size:13px}td,th{text-align:center;padding:0}th{color:var(--mut);font-weight:500}td.nm{text-align:left;white-space:nowrap;padding-right:6px}
+.prof{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.ava{width:62px;height:62px;border-radius:50%;border:3px solid #f1cf7a;background:var(--soft);display:grid;place-items:center;font-size:28px;overflow:hidden;flex:none;cursor:pointer}
+.ava img{width:100%;height:100%;object-fit:cover}
+.ring{width:160px;height:160px;border-radius:50%;margin:6px auto 14px;display:grid;place-items:center;background:conic-gradient(var(--ac) calc(var(--p)*1%),var(--soft) 0)}
+.ring div{width:130px;height:130px;border-radius:50%;background:var(--card);display:grid;place-content:center;text-align:center}
+.ring b{font-size:32px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}
+.stats b{font-size:26px;display:block}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.cal .dot{width:100%;height:auto;aspect-ratio:1;font-size:13px;cursor:pointer}
+.cal .out{opacity:.3}
+.navrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-weight:600}
+.navrow button{border:0;background:var(--soft);color:var(--ac);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
+.grid{overflow-x:auto}
+table{border-collapse:separate;border-spacing:4px;width:100%;font-size:13px}
+td,th{text-align:center;padding:0}
+th{color:var(--mut);font-weight:500}
+td.nm{text-align:left;white-space:nowrap;padding-right:6px}
 .c{min-width:27px;height:28px;border-radius:8px;background:var(--line);cursor:pointer;display:grid;place-items:center;font-size:11px;color:#fff}
-.sheet{position:fixed;inset:0;background:#0006;display:flex;align-items:flex-end;z-index:10}.sheet>div{background:var(--card);width:100%;max-width:520px;margin:0 auto;border-radius:28px 28px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+.sheet{position:fixed;inset:0;background:#0006;display:flex;align-items:flex-end;z-index:10}
+.sheet>div{background:var(--card);width:100%;max-width:520px;margin:0 auto;border-radius:28px 28px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
 input[type=text],select{width:100%;border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:16px;padding:12px 14px;font:inherit;margin:6px 0}
-.pre{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}.pre button{border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:14px;padding:8px 11px;font:inherit;cursor:pointer}
-.pre button.on{border-color:var(--ac);background:var(--soft)}.pre .sw{width:34px;height:34px;padding:0;border-radius:50%;border:3px solid transparent}.pre .sw.on{border-color:var(--tx)}
-.step{display:flex;align-items:center;gap:14px;margin:8px 0 14px}.step button{width:38px;height:38px;border-radius:50%;border:0;background:var(--soft);color:var(--ac);font-size:20px;cursor:pointer}
+.pre{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.pre button{border:2px solid var(--line);background:var(--bg);color:var(--tx);border-radius:14px;padding:8px 11px;font:inherit;cursor:pointer}
+.pre button.on{border-color:var(--ac);background:var(--soft)}
+.pre .sw{width:34px;height:34px;padding:0;border-radius:50%;border:3px solid transparent}
+.pre .sw.on{border-color:var(--tx)}
+.step{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
+.step button{width:38px;height:38px;border-radius:50%;border:0;background:var(--soft);color:var(--ac);font-size:20px;cursor:pointer}
 .row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
-.pet{text-align:center;padding:18px 10px}.petface{font-size:76px;line-height:1.2;margin:8px}.petbar{height:10px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}.petbar i{display:block;height:100%;background:linear-gradient(90deg,#f4b45e,#ee6677);border-radius:20px}
-.ach{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.ach:last-child{border:0}.achico{width:48px;height:48px;border-radius:15px;background:var(--soft);display:grid;place-items:center;font-size:25px;flex:none}.ach.lock{opacity:.48}.ach b{display:block}.tag{font-size:11px;color:var(--ac);font-weight:700}
+.pet{text-align:center;padding:18px 10px}
+.petface{font-size:76px;line-height:1.2;margin:8px;animation:petFloat 2s ease-in-out infinite}
+.petbar{height:10px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}
+.petbar i{display:block;height:100%;background:linear-gradient(90deg,#f4b45e,#ee6677);border-radius:20px;transition:width .5s ease}
+.ach{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.ach:last-child{border:0}
+.achico{width:48px;height:48px;border-radius:15px;background:var(--soft);display:grid;place-items:center;font-size:25px;flex:none}
+.ach.lock{opacity:.48}
+.ach b{display:block}
+.tag{font-size:11px;color:var(--ac);font-weight:700}
 #adBanner{display:none;position:sticky;top:0;z-index:20;max-width:520px;margin:0 auto;background:var(--card);color:var(--tx);padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);font-size:13px}
 #adBanner a{color:#ee6677;font-weight:700;text-decoration:none;margin-left:6px}
 #gate{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);padding:24px;align-items:center;justify-content:center;text-align:center}
 #gate .gatebox{width:100%;max-width:420px;background:var(--card);padding:26px 20px;border-radius:24px;box-shadow:var(--sh)}
-#gate .gateicon{font-size:56px;margin-bottom:12px}#gate p{color:var(--mut);line-height:1.55}
-#gate a{display:block;text-decoration:none;margin:16px 0}#gate button{width:100%;margin-top:8px}
+#gate .gateicon{font-size:56px;margin-bottom:12px}
+#gate p{color:var(--mut);line-height:1.55}
+#gate a{display:block;text-decoration:none;margin:16px 0}
+#gate button{width:100%;margin-top:8px}
+
+/* Плавное появление экранов */
+.screen-enter{animation:screenEnter .32s ease both}
+@keyframes screenEnter{
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Анимация галочки */
+@keyframes checkPop{
+  0%{transform:scale(.45)}
+  65%{transform:scale(1.2)}
+  100%{transform:scale(1)}
+}
+
+/* Плавающий питомец */
+@keyframes petFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px)}
+}
+
+/* Получение опыта питомцем */
+.petface.xp-pop{animation:petXp .55s ease}
+@keyframes petXp{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.2) rotate(-8deg)}
+  70%{transform:scale(1.12) rotate(8deg)}
+  100%{transform:scale(1)}
+}
+
+/* Повышение уровня питомца */
+.petface.level-pop{animation:petLevel .85s ease}
+@keyframes petLevel{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.35) rotate(-12deg)}
+  60%{transform:scale(1.3) rotate(12deg)}
+  100%{transform:scale(1)}
+}
+
+/* Конфетти */
+.confetti{
+  position:fixed;
+  top:-15px;
+  width:9px;
+  height:13px;
+  z-index:9999;
+  pointer-events:none;
+  animation:confettiFall 1.8s ease-in forwards;
+}
+@keyframes confettiFall{
+  to{transform:translateY(105vh) rotate(720deg);opacity:0}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
 
-<!-- Реклама Telegram-канала -->
 <div id="adBanner">
   📢 Подписывайся на мой Telegram-канал!
   <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a>
 </div>
 
-<!-- Начальный экран подписки -->
 <div id="gate">
   <div class="gatebox">
     <div class="gateicon">📢</div>
@@ -112,7 +206,77 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const $=s=>document.querySelector(s);
 
 let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}},tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
+
 const KEY='habits_v2',CH=3000;
+
+/* Звуковые эффекты */
+let soundEnabled=true;
+try{soundEnabled=localStorage.getItem('habit_sound')!=='off'}catch(e){}
+let audioContext=null;
+
+function playSound(type='tap'){
+  if(!soundEnabled)return;
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    audioContext=audioContext||new AudioCtx();
+    if(audioContext.state==='suspended')audioContext.resume();
+
+    const sounds={
+      tap:{freq:440,duration:.055,volume:.045},
+      success:{freq:660,duration:.16,volume:.09},
+      reward:{freq:880,duration:.25,volume:.1},
+      level:{freq:1040,duration:.3,volume:.1}
+    };
+    const s=sounds[type]||sounds.tap;
+    const osc=audioContext.createOscillator();
+    const gain=audioContext.createGain();
+    const now=audioContext.currentTime;
+
+    osc.type='sine';
+    osc.frequency.setValueAtTime(s.freq,now);
+    if(type==='reward'||type==='level'){
+      osc.frequency.setValueAtTime(s.freq*1.25,now+.09);
+    }
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(s.volume,now+.018);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+s.duration);
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.start(now);
+    osc.stop(now+s.duration);
+  }catch(e){}
+}
+
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  try{localStorage.setItem('habit_sound',soundEnabled?'on':'off')}catch(e){}
+  if(soundEnabled)playSound('success');
+  render();
+  note(soundEnabled?'🔊 Звуки включены':'🔇 Звуки выключены');
+}
+
+/* Звук для нажатий на кнопки */
+document.addEventListener('click',e=>{
+  const button=e.target.closest('button');
+  if(button&&!button.disabled)playSound('tap');
+},true);
+
+/* Конфетти при достижении */
+function celebrate(){
+  playSound('reward');
+  const colors=COLORS;
+  for(let i=0;i<45;i++){
+    const piece=document.createElement('div');
+    piece.className='confetti';
+    piece.style.left=Math.random()*100+'vw';
+    piece.style.background=colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDelay=Math.random()*.5+'s';
+    piece.style.borderRadius=Math.random()>.5?'50%':'2px';
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(),2500);
+  }
+}
 
 function cloud(){try{return tg&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null}catch(e){return null}}
 function save(){
@@ -142,11 +306,32 @@ function setCnt(k,id,n){
   if(n>0)o[id]=n;else delete o[id];
   if(!Object.keys(o).length)delete S.log[k]
 }
+
 function tap(k,id){
-  let h=S.habits.find(x=>x.id===id);if(!h)return;
-  let c=cnt(k,id);setCnt(k,id,c>=h.goal?0:c+1);
-  save();buzz(c+1>=h.goal?'medium':'light');render()
+  let h=S.habits.find(x=>x.id===id);
+  if(!h)return;
+
+  const before=ACH.filter(a=>a.val()>=a.goal).map(a=>a.id);
+  let c=cnt(k,id);
+  let completedNow=c<h.goal&&c+1>=h.goal;
+
+  setCnt(k,id,c>=h.goal?0:c+1);
+
+  const after=ACH.filter(a=>a.val()>=a.goal);
+  const newAchievements=after.filter(a=>!before.includes(a.id));
+
+  playSound(completedNow?'success':'tap');
+
+  if(newAchievements.length){
+    celebrate();
+    setTimeout(()=>note('🏆 Новое достижение!\n\n'+newAchievements.map(a=>a.icon+' '+a.name).join('\n')),350);
+  }
+
+  save();
+  buzz(completedNow?'medium':'light');
+  render();
 }
+
 function dayState(d,only){
   let k=fmt(d),hs=S.habits.filter(h=>active(h,d)&&(!only||only==='all'||h.id===only));
   if(!hs.length)return -1;
@@ -325,6 +510,8 @@ function vAchievements(){
 const PET_TASKS=[{id:'feed',icon:'🥕',name:'Покормить питомца',desc:'Позаботься о его энергии',xp:20},{id:'play',icon:'🎾',name:'Поиграть вместе',desc:'Немного веселья каждый день',xp:20},{id:'walk',icon:'🌳',name:'Прогуляться',desc:'Время для свежего воздуха',xp:30},{id:'train',icon:'🧠',name:'Потренироваться',desc:'Выучи с питомцем что-нибудь новое',xp:30}];
 const PET_FORMS=[{level:1,icon:'♟️',name:'Пешка'},{level:5,icon:'♞',name:'Конь'},{level:10,icon:'♝',name:'Слон'},{level:15,icon:'♜',name:'Ладья'},{level:20,icon:'♛',name:'Ферзь'},{level:25,icon:'♚',name:'Король'}];
 
+let petEffect='';
+
 function petStage(level=S.pet.level){
   let stage=PET_FORMS[0];for(const form of PET_FORMS){if(level>=form.level)stage=form}return stage
 }
@@ -341,32 +528,56 @@ function petTask(id){
   initPet();
   const task=PET_TASKS.find(x=>x.id===id);
   if(!task||S.pet.done.includes(id))return;
+
   const oldStage=petStage(S.pet.level);
-  S.pet.done.push(id);S.pet.xp+=task.xp;
+  S.pet.done.push(id);
+  S.pet.xp+=task.xp;
+
   let levelUps=0;
   while(S.pet.xp>=100){S.pet.xp-=100;S.pet.level++;levelUps++}
+
   const newStage=petStage(S.pet.level);
-  save();buzz('medium');
-  if(newStage.level>oldStage.level)note(`🎉 ЭВОЛЮЦИЯ!\n\nТвой питомец превратился в ${newStage.name} ${newStage.icon}!\n\nУровень: ${S.pet.level}`);
-  else if(levelUps>0)note(`🎉 Новый уровень!\n\nУровень питомца: ${S.pet.level}\nФорма: ${newStage.name} ${newStage.icon}`);
-  render()
+  petEffect=levelUps>0?'level-pop':'xp-pop';
+
+  save();
+  buzz('medium');
+  playSound(levelUps>0?'level':'success');
+
+  render();
+
+  setTimeout(()=>{
+    petEffect='';
+    const face=document.querySelector('.petface');
+    if(face)face.classList.remove('xp-pop','level-pop');
+  },900);
+
+  if(newStage.level>oldStage.level){
+    note(`🎉 ЭВОЛЮЦИЯ!\n\nТвой питомец превратился в ${newStage.name} ${newStage.icon}!\n\nУровень: ${S.pet.level}`);
+  }else if(levelUps>0){
+    note(`🎉 Новый уровень!\n\nУровень питомца: ${S.pet.level}\nФорма: ${newStage.name} ${newStage.icon}`);
+  }
 }
 function renamePet(){ask('Имя питомца',S.pet.name,'Сохранить',v=>{v=v.trim();if(v){S.pet.name=v.slice(0,24);save();render()}},24)}
 
 function vPet(){
   initPet();
   const p=S.pet,stage=petStage(p.level),nextStage=PET_FORMS.find(f=>f.level>p.level),done=PET_TASKS.filter(t=>p.done.includes(t.id)).length,xpProgress=p.xp,evolutionProgress=nextStage?Math.min(100,Math.round(((p.level-stage.level+p.xp/100)/(nextStage.level-stage.level))*100)):100;
-  return `<h1>Мой питомец 🐾</h1><div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="petface">${stage.icon}</div><h2>${esc(p.name)}</h2><div class="tag">${stage.name.toUpperCase()}</div><div class="mut">Уровень ${p.level}</div><div class="petbar"><i style="width:${xpProgress}%"></i></div><b>${p.xp} / 100 XP</b><div class="mut">До следующего уровня</div><button class="btn ghost w" onclick="renamePet()">✏️ Изменить имя</button></div>
+  return `<h1>Мой питомец 🐾</h1><div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="petface ${petEffect}">${stage.icon}</div><h2>${esc(p.name)}</h2><div class="tag">${stage.name.toUpperCase()}</div><div class="mut">Уровень ${p.level}</div><div class="petbar"><i style="width:${xpProgress}%"></i></div><b>${p.xp} / 100 XP</b><div class="mut">До следующего уровня</div><button class="btn ghost w" onclick="renamePet()">✏️ Изменить имя</button></div>
 <div class="card"><h2>♟️ Эволюция питомца</h2>${PET_FORMS.map(f=>{const unlocked=p.level>=f.level,current=stage.level===f.level;return `<div class="ach ${unlocked?'':'lock'}"><div class="achico">${unlocked?f.icon:'🔒'}</div><div style="flex:1"><b>${f.name}</b><div class="mut">Уровень ${f.level}</div>${current?'<div class="tag">ТЕКУЩАЯ ФОРМА</div>':''}</div>${unlocked?'<span class="tag">ОТКРЫТО</span>':'<span class="mut">ЗАКРЫТО</span>'}</div>`}).join('')}${nextStage?`<div style="margin-top:14px"><b>Следующая эволюция</b><div class="mut">${nextStage.icon} ${nextStage.name} · уровень ${nextStage.level}</div><div class="petbar"><i style="width:${evolutionProgress}%"></i></div><div class="mut">${evolutionProgress}% до новой формы</div></div>`:`<div class="pet" style="padding:16px"><div style="font-size:35px">👑</div><b>Максимальная эволюция!</b><div class="mut">Твой питомец стал королём!</div></div>`}</div>
 <div class="card"><h2>Забота о питомце · ${done}/${PET_TASKS.length} сегодня</h2><div class="mut" style="margin-bottom:10px">Выполняй задания, получай опыт, повышай уровень и открывай новые формы!</div>${PET_TASKS.map(t=>{const complete=p.done.includes(t.id);return `<div class="row"><span><b>${t.icon} ${t.name}</b><div class="mut">${t.desc} · +${t.xp} XP</div></span><button class="btn ${complete?'ghost':''}" ${complete?'disabled':''} onclick="petTask('${t.id}')">${complete?'Готово ✓':'Выполнить'}</button></div>`}).join('')}</div>`
 }
 
 function vSet(){
-  return `<h1>Настройки</h1><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length===7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div><div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватарку</button>${S.avatar?'<button class="btn ghost w" onclick="removeAvatar()">↩ Сбросить фото</button>':''}<button class="btn ghost w" onclick="rename()">✏️ Изменить имя</button></div><div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить из копии</button><button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`
+  return `<h1>Настройки</h1>
+  <div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length===7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div>
+  <div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватарку</button>${S.avatar?'<button class="btn ghost w" onclick="removeAvatar()">↩ Сбросить фото</button>':''}<button class="btn ghost w" onclick="rename()">✏️ Изменить имя</button></div>
+  <div class="card"><h2>🔊 Звуки приложения</h2><div class="row"><span><b>Звуковые эффекты</b><div class="mut">Звуки нажатий, привычек и наград</div></span><button class="btn ${soundEnabled?'':'ghost'}" onclick="toggleSound()">${soundEnabled?'Включены':'Выключены'}</button></div></div>
+  <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить из копии</button><button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`
 }
 
 function render(){
-  $('#app').innerHTML={home:vHome,today:vToday,stats:vStats,week:vWeek,pet:vPet,ach:vAchievements,set:vSet}[tab]();
+  const views={home:vHome,today:vToday,stats:vStats,week:vWeek,pet:vPet,ach:vAchievements,set:vSet};
+  $('#app').innerHTML='<div class="screen-enter">'+views[tab]()+'</div>';
   $('#nav').innerHTML=[['home','🏠'],['today','☑️'],['stats','📊'],['week','📋'],['pet','🐾'],['ach','🏆'],['set','⚙️']].map(([t,i])=>`<button class="${t===tab?'on':''}" onclick="go('${t}')">${i}</button>`).join('')
 }
 function go(t){tab=t;render();scrollTo(0,0)}
@@ -434,7 +645,7 @@ function openEdit(id){
   document.body.appendChild(s);paint()
 }
 
-// Начальный экран показывается при каждом новом запуске.
+// Начальный экран
 function showGate(){
   $('#app').style.display='none';
   $('#nav').style.display='none';
