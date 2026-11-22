@@ -517,7 +517,7 @@ normalize=function(){
 };
 
 /* ===== ЗАМЕТКИ, ПОДЕЛИТЬСЯ, РЕФЕРАЛЫ ===== */
-const BOT_USERNAME='Trackerfom_bot'; // username бота без @
+const BOT_USERNAME='@Trackerfom_bot'; // username бота без @
 const REF_API=''; // адрес сервера для учёта приглашений (необязательно)
 const INVITEE_BONUS=50;
 const REF_REWARDS=[{n:1,coins:50},{n:3,coins:150},{n:5,coins:300},{n:10,coins:700}];
@@ -595,11 +595,11 @@ async function syncRef(){
 function enterRefCode(){ask('Код друга','',v=>applyRef(v),40)}
 function copyRef(){
  const v=refLink();
- if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Исправляется')).catch(()=>ask('Скопируй ссылку',v,()=>{},300));
- else ask('Исправляется',v,()=>{},300);
+ if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Ссылка скопирована')).catch(()=>ask('Скопируй ссылку',v,()=>{},300));
+ else ask('Скопируй ссылку',v,()=>{},300);
 }
 function shareInvite(){
- if(!botReady())return note('Исправляется.');
+ if(!botReady())return note('Сначала укажи BOT_USERNAME в коде приложения.');
  shareTG('💜 Присоединяйся к FocusOnMe — трекер привычек с питомцем! Получи +'+INVITEE_BONUS+' 🪙 по моей ссылке.',refLink());
 }
 function claimRef(n){
