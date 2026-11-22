@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>FocusOnMe — Трекер привычек</title>
+<title>FocusOnMeapps — Трекер привычек</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{--bg:#090611;--card:#171020;--tx:#f7efff;--mut:#a99bb9;--line:#38264d;--ac:#a855f7;--ac2:#d49aff;--glow:0 0 22px #9b4dff35}
@@ -41,7 +41,7 @@ nav button.on{background:#49266b;color:#fff;box-shadow:0 0 13px #a855f766}
 .sheet{position:fixed;inset:0;background:#000b;z-index:30;display:flex;align-items:flex-end}.sheet>div{background:#170f22;border:1px solid #68418b;border-radius:25px 25px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:560px;margin:auto;max-height:90vh;overflow:auto}
 .pre{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 14px}.pre button{border:1px solid #63427e;background:#281938;color:white;border-radius:12px;padding:8px}.pre button.on{background:#7540a4;border-color:#d0a0ff}
 #banner{display:none;text-align:center;padding:9px;background:#1c1128;border-bottom:1px solid #573775;font-size:12px}#banner a{color:#d9aaff;font-weight:800;text-decoration:none}
-#gate{position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at center,#29133d,#08050d 70%);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+#gate,#choice,#newsMain{position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at center,#29133d,#08050d 70%);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
 .gatebox{max-width:420px;width:100%;background:#170e22;border:1px solid #8752b6;border-radius:27px;padding:27px 20px;box-shadow:0 0 35px #a855f744}.gateicon{font-size:55px}#gate a{text-decoration:none;display:block}
 .screen-enter{animation:appear .22s ease}@keyframes appear{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .confetti{position:fixed;top:-15px;width:8px;height:13px;z-index:99;pointer-events:none;animation:fall 1.8s forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
@@ -49,11 +49,76 @@ nav button.on{background:#49266b;color:#fff;box-shadow:0 0 13px #a855f766}
 .pet-visual{position:relative;display:inline-block}.pet-accessory{position:absolute;top:-8px;right:-24px;font-size:35px;filter:drop-shadow(0 0 8px #d49aff)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 textarea{resize:vertical;min-height:110px}.nt{display:block;color:#cfb3ea;font-size:11px;font-weight:400;margin-top:3px;white-space:pre-wrap;word-break:break-word}
+.mode{width:100%;display:flex;align-items:center;gap:14px;text-align:left;margin-top:12px;padding:16px;border-radius:20px;border:1px solid #8b5bb8;background:linear-gradient(135deg,#3a1d58,#1e1230);color:#fff}.mode:active{transform:scale(.98)}.mode .mi{font-size:36px}.mode b{display:block;font-size:16px}.mode small{display:block;color:var(--mut);font-size:12px;margin-top:2px}.mode.soon{border:1px solid #ff2d55;background:linear-gradient(135deg,#4a0a1c,#1a0610);box-shadow:0 0 14px #ff2d5580,0 0 30px #ff2d5533,inset 0 0 14px #ff2d5522;animation:neonred 2.4s ease-in-out infinite}.mode.soon .mi{filter:drop-shadow(0 0 8px #ff2d55)}.mode.soon b{color:#ff7a93;text-shadow:0 0 8px #ff2d5599}.mode.soon small{color:#d98a98}.mode.soon .tag{color:#ff6b86;text-shadow:0 0 6px #ff2d55}.mode .tag{margin-left:auto;white-space:nowrap}@keyframes neonred{50%{box-shadow:0 0 22px #ff2d55b0,0 0 46px #ff2d5544,inset 0 0 18px #ff2d5533}}
+/* ===== НЕОНОВЫЙ ФИОЛЕТОВЫЙ ===== */
+:root{--ac:#b026ff;--ac2:#e0a3ff;--line:#4a1d6e;--mut:#b9a6cc;--glow:0 0 14px #b026ff66,0 0 34px #b026ff22}
+body{background:radial-gradient(ellipse at top,#2a0a47 0,#0a0414 55%)}
+h1{color:#f6e0ff;text-shadow:0 0 12px #c44dff,0 0 26px #b026ff88}
+h2{text-shadow:0 0 10px #b026ff88}
+.card{border:1px solid #b026ff;background:linear-gradient(145deg,#1d0a33,#10051c);box-shadow:0 0 12px #b026ff66,0 0 32px #b026ff22,inset 0 0 14px #b026ff1a}
+.btn{border:1px solid #e0a3ff;background:linear-gradient(135deg,#8a14e0,#c44dff);box-shadow:0 0 14px #c44dffaa,0 0 28px #b026ff55;text-shadow:0 0 6px #ffffff88}
+.btn.ghost{background:#1d0a30;color:#e8b8ff;border-color:#b026ff;box-shadow:0 0 10px #b026ff55;text-shadow:0 0 6px #c44dff88}
+.btn.danger{background:#4a0a2a;border-color:#ff3d8b;color:#ffd0e0;box-shadow:0 0 10px #ff3d8b66}
+input,select,textarea{border:1px solid #b026ff;background:#0d0518;box-shadow:0 0 8px #b026ff33}
+input:focus,select:focus,textarea:focus{outline:0;box-shadow:0 0 14px #c44dffaa}
+nav{background:#12061eee;border:1px solid #b026ff;box-shadow:0 0 18px #b026ff88}
+nav button.on{background:#5a14a0;box-shadow:0 0 14px #c44dff,inset 0 0 8px #e0a3ff55}
+#banner{background:#12061e;border-bottom:1px solid #b026ff;box-shadow:0 2px 12px #b026ff44}#banner a{color:#e8b8ff;text-shadow:0 0 8px #c44dff}
+.ava{background:#2d0f4d;border-color:#e0a3ff;box-shadow:0 0 14px #c44dff}
+.day.sel{background:#3d0f66;box-shadow:0 0 10px #b026ff88}
+.dot{border-color:#8a3ac2}.dot.full{background:#b026ff;border-color:#f0c8ff;box-shadow:0 0 12px #c44dff}.dot.part{border-color:#e08cff;background:#2d0f4d;box-shadow:0 0 7px #c44dff88}
+.habit{background:#14071f;border-color:#6a2a9a}.habit.done{border-color:#c44dff;background:#2d0f4d;box-shadow:0 0 14px #b026ff77}
+.emoji,.achico{background:#3d0f66;box-shadow:0 0 8px #b026ff55}
+.check{border-color:#b026ff}.done .check{background:#b026ff;border-color:#f0c8ff;box-shadow:0 0 9px #c44dff}
+.moods button{border-color:#6a2a9a}.moods button.on{border-color:#e0a3ff;background:#5a14a0;box-shadow:0 0 12px #c44dff}
+.stat{background:#1a0930;box-shadow:inset 0 0 10px #b026ff22}.stat b{color:#e8b8ff;text-shadow:0 0 10px #c44dff}
+.ring{background:conic-gradient(#c44dff calc(var(--p)*1%),#2d1245 0);box-shadow:0 0 22px #b026ff66}.ring div{background:#0d0518}.ring b{text-shadow:0 0 10px #c44dff}
+.bar{background:#2a1040}.bar i,.task-progress i{background:linear-gradient(90deg,#8a14e0,#e0a3ff);box-shadow:0 0 8px #c44dff}
+.quote{border-color:#c44dff;background:linear-gradient(135deg,#4a1280,#14082a);box-shadow:0 0 14px #b026ff66;text-shadow:0 0 8px #c44dff88}
+.navrow button{border-color:#b026ff;background:#2a0f45;box-shadow:0 0 8px #b026ff55}
+.petface{filter:drop-shadow(0 0 18px #c44dff) drop-shadow(0 0 34px #b026ff88)}
+.tag{color:#e8b8ff;text-shadow:0 0 6px #c44dff}
+.task-active{border-color:#c44dff;box-shadow:0 0 12px #b026ff66}
+.sheet>div{background:#10051c;border-color:#b026ff;box-shadow:0 0 24px #b026ff66}
+.pre button{border-color:#8a3ac2;background:#1d0a30}.pre button.on{background:#7a1fc0;border-color:#e0a3ff;box-shadow:0 0 8px #c44dff}
+#gate,#choice,#newsMain{background:radial-gradient(ellipse at center,#2e0c4f,#07030d 70%)}
+.gatebox{background:#10051c;border-color:#c44dff;box-shadow:0 0 30px #b026ff88,inset 0 0 20px #b026ff22}
+.gateicon{filter:drop-shadow(0 0 14px #c44dff)}
+.mode{border-color:#c44dff;background:linear-gradient(135deg,#3d1066,#170826);box-shadow:0 0 14px #b026ff88,inset 0 0 12px #b026ff22}
+.mode .mi{filter:drop-shadow(0 0 8px #c44dff)}
+.mode.soon{border:1px solid #ff2d55;background:linear-gradient(135deg,#4a0a1c,#1a0610);box-shadow:0 0 14px #ff2d5580,0 0 30px #ff2d5533,inset 0 0 14px #ff2d5522}
+.mode.soon .mi{filter:drop-shadow(0 0 8px #ff2d55)}
+#choice,#newsMain{align-items:flex-start;overflow-y:auto}#choice .gatebox,#newsMain .gatebox{margin:auto;max-width:440px}
+.mode.y{border:1px solid #ffe600;background:linear-gradient(135deg,#4a4000,#1a1500);box-shadow:0 0 14px #ffe60080,0 0 30px #ffe60033,inset 0 0 14px #ffe60022}.mode.y .mi{filter:drop-shadow(0 0 8px #ffe600)}.mode.y b{color:#fff27a;text-shadow:0 0 8px #ffe600aa}.mode.y .tag{color:#ffee55;text-shadow:0 0 6px #ffe600}
+.mode.g{border:1px solid #39ff14;background:linear-gradient(135deg,#0a3d05,#06160a);box-shadow:0 0 14px #39ff1480,0 0 30px #39ff1433,inset 0 0 14px #39ff1422}.mode.g .mi{filter:drop-shadow(0 0 8px #39ff14)}.mode.g b{color:#9dff8a;text-shadow:0 0 8px #39ff14aa}.mode.g .tag{color:#7dff63;text-shadow:0 0 6px #39ff14}
+.mode.b{border:1px solid #00d5ff;background:linear-gradient(135deg,#00334a,#04121a);box-shadow:0 0 14px #00d5ff80,0 0 30px #00d5ff33,inset 0 0 14px #00d5ff22}.mode.b .mi{filter:drop-shadow(0 0 8px #00d5ff)}.mode.b b{color:#8aeaff;text-shadow:0 0 8px #00d5ffaa}.mode.b .tag{color:#5fe3ff;text-shadow:0 0 6px #00d5ff}
+.mode.y small,.mode.g small,.mode.b small{color:#c9c2d4}
+.newsitem{margin-top:12px}.newsitem p{margin:7px 0;color:#e6d2f5}.newsitem h2{margin-top:6px}
+.brand{font-size:clamp(20px,6.4vw,32px);font-weight:900;letter-spacing:2px;color:#f6e0ff;text-shadow:0 0 12px #c44dff,0 0 28px #b026ff,0 0 48px #b026ff88;margin:2px 0 10px}
+.credit{text-align:center;color:var(--mut);font-size:12px;margin:22px 0 4px;text-shadow:0 0 8px #b026ff66}
+.about p{margin:8px 0;color:#e6d2f5}
+.gatelogo{width:104px;height:104px;object-fit:contain;display:block;margin:0 auto 6px;filter:drop-shadow(0 0 14px #ff2d5555)}
+/* ===== ЧЁРНО-БЕЛОЕ МЕНЮ (режимы сохраняют свои цвета) ===== */
+#choice,#newsMain,#gate{background:radial-gradient(ellipse at center,#1a1a1a 0,#050505 70%)}
+#choice .gatebox,#newsMain .gatebox,#gate .gatebox{background:#0a0a0a;border:1px solid #f2f2f2;box-shadow:0 0 22px #ffffff40,0 0 48px #ffffff14,inset 0 0 18px #ffffff10}
+#choice .brand,#newsMain .brand,#gate .brand{color:#fff;text-shadow:0 0 10px #ffffffcc,0 0 28px #ffffff66}
+#choice h1,#newsMain h1,#gate h1{color:#fff;text-shadow:0 0 10px #ffffff88}
+#choice h2,#newsMain h2,#gate h2{color:#fff;text-shadow:0 0 8px #ffffff66}
+#choice p,#newsMain p,#gate p{color:#bdbdbd}
+#choice .mut,#newsMain .mut,#choice .credit,#newsMain .credit,#gate .mut,#gate .credit{color:#9a9a9a;text-shadow:none}
+#choice .btn,#newsMain .btn,#gate .btn{background:linear-gradient(135deg,#2b2b2b,#101010);border:1px solid #f2f2f2;color:#fff;box-shadow:0 0 12px #ffffff55,inset 0 0 8px #ffffff14;text-shadow:0 0 6px #ffffff66}
+#choice .btn.ghost,#newsMain .btn.ghost,#gate .btn.ghost{background:#0e0e0e;border-color:#bdbdbd;color:#e6e6e6;box-shadow:0 0 8px #ffffff33}
+#newsMain .card{background:#0e0e0e;border:1px solid #cfcfcf;box-shadow:0 0 12px #ffffff33,inset 0 0 12px #ffffff0d}
+#newsMain .tag{color:#e6e6e6;text-shadow:0 0 6px #ffffff88}
+#newsMain .newsitem p,#newsMain .about p{color:#dcdcdc}
+#newsMain .card.empty{color:#9a9a9a}
 </style>
 </head>
 <body>
-<div id="banner">💜 Поддержи проект — <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a></div>
-<div id="gate"><div class="gatebox"><div class="gateicon">💜</div><h1>Добро пожаловать в FocusOnMe</h1><p>Поддержи проект подпиской на Telegram-канал.</p><a href="https://t.me/focus_iron" target="_blank" rel="noopener"><button class="btn w">Подписаться на канал</button></a><button class="btn ghost w" onclick="showApp()">Я подписался · Продолжить</button><div class="mut" style="margin-top:12px">Нажимая «Продолжить», ты переходишь к трекеру.</div></div></div>
+<div id="banner">✅ Поддержи проект — <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a></div>
+<div id="gate"><div class="gatebox"><img class="gatelogo" alt="" src="data:image/png;base64,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"><h1>Добро пожаловать в FocusOnMeapps</h1><p>Поддержи проект подпиской на Telegram-канал.</p><a href="https://t.me/focus_iron" target="_blank" rel="noopener"><button class="btn w">Подписаться на канал</button></a><button class="btn ghost w" onclick="showChoice()">Я подписался · Продолжить</button><div class="mut" style="margin-top:12px">Нажимая «Продолжить», ты переходишь в раздел для фокуса на себе.</div></div></div>
+<div id="choice" style="display:none"><div class="gatebox"><div class="brand">FOCUSONMEapps</div><h1>Что тебя интересует?</h1><p>Выбери раздел, с которого начнём.</p><button class="mode" onclick="showApp()"><span class="mi">✅</span><span><b>Трекер привычек</b><small>Привычки, питомец, квесты и достижения</small></span></button><button class="mode soon" onclick="comingSoon('План тренировок')"><span class="mi">💪</span><span><b>План тренировок</b><small>Программы и расписание тренировок</small></span><span class="tag">В РАЗРАБОТКЕ</span></button><button class="mode y" onclick="comingSoon()"><span class="mi">❓</span><span><b>В разработке</b><small>Скоро здесь что-то появится</small></span><span class="tag">❓</span></button><button class="mode g" onclick="comingSoon()"><span class="mi">❓</span><span><b>В разработке</b><small>Скоро здесь что-то появится</small></span><span class="tag">❓</span></button><button class="mode b" onclick="comingSoon()"><span class="mi">❓</span><span><b>В разработке</b><small>Скоро здесь что-то появится</small></span><span class="tag">❓</span></button><button class="btn ghost w" onclick="showAbout()">❓ Для чего этот набор приложений</button><button class="btn w" onclick="showMainNews()">📰 Новости</button><button class="btn ghost w" onclick="openFeedback()">💬 Отправь пожелание или даже пообщайся с разработчиком</button><div class="mut" style="text-align:center;margin-top:6px">разработчик — vibe coder</div><button class="btn ghost w" onclick="supportSoon()">💜 Поддержать автора · в разработке</button><div class="credit">от создателя sqwizmy (основатель тгк FocusOnMe)</div></div></div>
+<div id="newsMain" style="display:none"></div>
 <div id="app"></div><nav id="nav" style="display:none"></nav>
 <script>
 const tg=window.Telegram?.WebApp;
@@ -62,7 +127,7 @@ const $=s=>document.querySelector(s);
 const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MOODS=['😞','😕','😐','🙂','😄'];
-const COLORS=['#a855f7','#bd72ff','#8e55c9','#d18aff','#7342a5','#9b69cf'];
+const COLORS=['#b026ff','#c44dff','#e0a3ff','#9d00ff','#d27bff','#f0c8ff'];
 const QUOTES=["Маленькие шаги приводят к большим переменам.", "Не идеально, а регулярно.", "Сегодня — хорошее время начать.", "Прогресс важнее скорости.", "Каждый день — новая возможность.", "Начни с малого — и продолжай каждый день.", "Привычка — это голосование за того, кем ты хочешь стать.", "Сегодняшний шаг важнее вчерашних планов.", "Дисциплина — это забота о себе из будущего.", "Не жди мотивации, создай ритм.", "Даже самый длинный путь состоит из обычных шагов.", "Ты не обязан быть лучшим, достаточно стать лучше, чем вчера.", "Постоянство побеждает вдохновение.", "Одна выполненная привычка — уже победа дня.", "Маленькие действия, повторённые тысячу раз, меняют жизнь.", "Не сравнивай свой первый шаг с чужим сотым.", "Начни сейчас, а идеальный момент придёт по пути.", "Пропуск — это пауза, а не конец пути.", "Важно не то, как ты упал, а как вернулся.", "Сила не в рывке, а в регулярности.", "Сделай сегодня то, за что завтра скажешь себе спасибо.", "Твоё будущее строится из сегодняшних решений.", "Лучше пять минут каждый день, чем пять часов раз в месяц.", "Не бросай, когда трудно. Просто сбавь темп.", "Хорошая привычка начинается с лёгкого шага.", "Порядок в днях создаёт порядок в жизни.", "Прогресс не всегда заметен, но всегда накапливается.", "Каждый день — чистый лист для новой привычки.", "Верь в процесс, даже если результат пока скрыт.", "Ты сильнее своей лени.", "Сначала ты формируешь привычки, потом они формируют тебя.", "Ритуал утра задаёт тон всему дню.", "Выбирай то, что приближает, а не то, что отвлекает.", "Один шаг в нужную сторону лучше десяти мыслей о нём.", "Не ищи идеальный план, начни с любого.", "Терпение — тоже навык, и он тренируется.", "Твои усилия складываются, даже когда ты этого не видишь.", "Простые вещи, сделанные вовремя, творят чудеса.", "Сегодня ты можешь сделать чуть больше, чем вчера.", "Не требуй от себя невозможного, требуй регулярного.", "Лучшее время для старта — сейчас.", "Маленькая победа заряжает на большую.", "Береги свою серию, как свой маленький огонёк.", "Забота о себе — это не роскошь, а основа.", "Отдых — часть пути, а не его враг.", "Ты уже начал, а это самое трудное.", "Привычки — это архитектура твоей жизни.", "Если трудно начать, сделай это на две минуты.", "Не откладывай на завтра то, что можно начать сегодня хотя бы на минуту.", "Каждый выбор — кирпичик будущего.", "Тот, кто идёт медленно, но не останавливается, доходит.", "Хороший день начинается с одного правильного действия.", "Твоё тело слышит, как ты с ним обращаешься.", "Выпей воды — и ты уже сделал добро для себя.", "Прогулка проясняет голову лучше любого совета.", "Сон — фундамент хорошего дня.", "Двигайся — и мысли тоже начнут двигаться.", "Здоровье складывается из мелочей.", "Ешь так, чтобы организм говорил спасибо.", "Дыши глубже, живи спокойнее.", "Пять минут тишины возвращают ясность.", "Растяжка утром — подарок телу на весь день.", "Не гонись за идеальной формой, заботься о самочувствии.", "Тренировка — это встреча с собой, которая делает сильнее.", "Лёгкая усталость после дела лучше тяжёлой лени.", "Отдыхай без чувства вины — ты это заслужил.", "Тело любит ритм, а ритм любит повторение.", "Прислушайся к себе — там много подсказок.", "Свежий воздух — самый доступный помощник.", "Каждый стакан воды — шаг к бодрости.", "Лучшая инвестиция — это твоё здоровье.", "Сначала самочувствие, потом достижения.", "Больше шагов — больше энергии.", "Фокус — это умение сказать «нет» лишнему.", "Делай одно дело за раз, но делай его хорошо.", "Внимание — самый ценный ресурс, не раздавай его даром.", "Тишина помогает услышать главное.", "Убери отвлечения — и работа пойдёт легче.", "Сосредоточенность — это тренировка, как мышцы.", "Начни с самого важного, остальное подождёт.", "Планируй день, но оставляй место для жизни.", "Короткий фокус лучше долгой рассеянности.", "Не распыляйся: выбери главное и иди к нему.", "Ясная цель делает путь короче.", "Телефон подождёт, твоя цель — нет.", "Разбей большую задачу на маленькие шаги.", "Закончи одно дело — почувствуй прилив сил.", "Не пытайся всё сразу, пытайся всё по порядку.", "Хорошее начало — половина дела.", "Сделанное лучше идеального, но несделанного.", "Простота — признак ясного ума.", "Каждая минута внимания — вклад в результат.", "Ошибка — это урок, а не приговор.", "Падать не страшно, страшно не вставать.", "Каждая неудача учит чему-то новому.", "Не ругай себя — поддержи и иди дальше.", "Срыв — повод сделать выводы, а не бросить.", "Ты не обязан быть идеальным, достаточно быть настойчивым.", "Сегодня трудно — завтра будет легче.", "Тот, кто пробует, уже впереди тех, кто ждёт.", "Страх уменьшается, когда делаешь шаг.", "Неудача — это просто остановка на пути к успеху.", "Будь добрее к себе — ты делаешь всё, что можешь.", "Сомнения не повод останавливаться.", "Трудности делают результат ценнее.", "Не бойся начинать заново, это сила, а не слабость.", "Опыт приходит к тем, кто продолжает.", "Каждое «ещё раз» приближает к цели.", "Твои усилия важны, даже если их никто не видит.", "Утро — лучшее время для маленького подвига.", "Хорошее утро начинается с вечера.", "Начни день с того, что делает тебя счастливее.", "Вечером подведи итоги и похвали себя.", "Ложись вовремя — завтра скажет спасибо.", "Каждое утро — новый шанс стать лучше.", "Не начинай день со спешки, начни со спокойствия.", "Вечерний ритуал помогает отпустить заботы.", "Утро с улыбкой — день с удачей.", "Закончи день благодарностью.", "Ты можешь изменить день за одну минуту, если решишь.", "Пусть сегодня будет чуть лучше, чем вчера.", "Слушай себя и не бойся замедляться.", "Ты имеешь право на отдых и на мечты.", "Люби себя не за результат, а за стремление.", "Позволь себе радоваться мелочам.", "Твоё настроение — важный сигнал, прислушайся к нему.", "Будь внимателен к своим чувствам, они всегда на твоей стороне.", "Благодарность делает день светлее.", "Улыбнись — и мир ответит тем же.", "Не держи в себе, поделись добрым словом.", "Радость живёт в простых вещах.", "Спокойствие — это сила, которую можно тренировать.", "Ты не одинок в своих трудностях.", "Позаботься о себе так, как заботился бы о друге.", "Внутренний покой начинается с принятия.", "Ты достоин хорошей жизни.", "Дай себе время, и всё получится.", "Каждое чувство важно, но не каждое должно управлять.", "Береги свою энергию — она не бесконечна.", "Хороший день складывается из хороших решений.", "Радуйся маленьким победам — они ведут к большим.", "Тот, кто умеет ждать, умеет достигать.", "Не спеши — спеши ровно настолько, насколько нужно.", "Результат приходит к тем, кто не торопит время.", "Дерево растёт медленно, но корни у него крепкие.", "Терпение превращает усилия в успех.", "Всё великое начиналось с маленького шага.", "Успех — это сумма небольших усилий, повторяемых изо дня в день.", "Каждый день приближает тебя к цели, если ты идёшь.", "Хорошие вещи требуют времени.", "Не ищи быстрых путей, ищи надёжных.", "Двигайся уверенно, даже если шаги небольшие.", "Время работает на тех, кто работает с ним.", "Не меряй путь днями, считай шагами.", "Месяц привычки изменит больше, чем год намерений.", "Хочешь перемен — начни с одного дня.", "Твоя цель ближе, чем кажется.", "Пока ты сомневаешься, другие делают первый шаг.", "Мечты сбываются у тех, кто их планирует.", "Сделай шаг — дорога появится сама.", "Цель без плана — просто мечта.", "Не бойся большой цели, бойся не двигаться к ней.", "Каждая цель начинается с «хочу» и продолжается «делаю».", "Ставь реальные цели и достигай их по одной.", "Видишь цель — действуй, а не жди.", "Измеряй успех своим ростом, а не чужим.", "Твоя история пишется каждым днём.", "Верь в себя — ты способен на большее.", "Не позволяй страху решать за тебя.", "Смелость — это шаг, сделанный несмотря на страх.", "Ты уже прошёл больше, чем думаешь.", "Каждая привычка — это инвестиция в себя.", "Тот, кто растёт, никогда не стоит на месте.", "Не жалей о потерянном времени, используй найденное.", "Лучшая версия тебя строится сегодня.", "Учись у вчерашнего дня, живи сегодняшним, надейся на завтрашний.", "Лёгкость приходит с практикой.", "Чем чаще делаешь, тем проще становится.", "Повторение — мать мастерства.", "То, что сначала кажется трудным, потом станет привычным.", "Мастерство — это привычка, доведённая до совершенства.", "Сегодня ты тренируешься, завтра ты умеешь.", "Привычка делает трудное лёгким.", "Начни — и дело станет понятнее.", "Практика превращает знание в умение.", "Не останавливайся на достигнутом, но цени его.", "Лучше сделать неидеально, чем не сделать совсем.", "Любое умение рождается из упорства.", "Настойчивость открывает любые двери.", "Работа над собой — самая выгодная работа.", "Твоё развитие — твоя ответственность и твоя радость.", "Умей гордиться собой за каждый шаг.", "Хвали себя за старания, а не только за итоги.", "Награди себя за усилие — это тоже часть привычки.", "Маленькая награда помогает идти дальше.", "Ты заслуживаешь гордости за то, что продолжаешь.", "Твои достижения начинаются с решения.", "Сегодня ты ближе к цели, чем вчера.", "Порядок на столе — порядок в мыслях.", "Организованность экономит силы для важного."];
 const PRESETS=[['🚶','Прогулка',1],['💧','Пить воду',8],['🧘','Медитация',1],['🏃','Бег',1],['💪','Тренировка',1],['📖','Читать',1],['🛏️','Ложиться вовремя',1],['🍎','Есть фрукты',1],['✍️','Вести дневник',1]];
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -73,7 +138,7 @@ const mon=d=>add(d,-wd(d));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='habits_v2';
 let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null},shop:{coins:0,owned:[],equipped:''},reminders:[],claimedQuests:{},favQuotes:[],notes:{},moodNotes:{},ref:{code:'',by:'',invited:0,claimed:[]},shares:0,sx:{night:0,early:0,got:[]},look:{bg:'default',skin:'default',bgs:['default'],skins:['default']}};
-let tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
+let moreOpen=false,tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
 let soundEnabled=true,petEffect='',reminderTimer=null,lastReminder='',petTimerInterval=null;
 try{soundEnabled=localStorage.getItem('habit_sound')!=='off'}catch(e){}
 
@@ -99,7 +164,7 @@ function normalize(){
  if(!S.moodNotes||typeof S.moodNotes!=='object')S.moodNotes={};
  if(!S.ref||typeof S.ref!=='object')S.ref={code:'',by:'',invited:0,claimed:[]};
  if(!Array.isArray(S.ref.claimed))S.ref.claimed=[];
- S.ref.invited=Math.max(0,Number(S.ref.invited)||0);S.ref.by=S.ref.by||'';
+ S.ref.invited=Math.max(0,Number(S.ref.invited)||0);S.ref.by=S.ref.by||'';S.ref.seq=Number.isInteger(S.ref.seq)?S.ref.seq:null;S.ref.pending=S.ref.pending||'';
  if(!S.ref.code)S.ref.code=String(tg?.initDataUnsafe?.user?.id||('u'+Math.random().toString(36).slice(2,8)));
  S.shares=Math.max(0,Number(S.shares)||0);
  if(!S.sx||typeof S.sx!=='object')S.sx={night:0,early:0,got:[]};
@@ -180,11 +245,11 @@ function tap(k,id){
 function weekStrip(){const m=mon(sel);return '<div class="week">'+Array.from({length:7},(_,i)=>{const d=add(m,i);return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`}).join('')+'</div>'}
 function vHome(){
  const user=tg?.initDataUnsafe?.user,name=S.name||(user?.first_name||'Гость'),k=fmt(today()),q=QUOTES[Math.floor(today()/86400000)%QUOTES.length];
- return `<div class="prof"><div class="ava">${S.avatar?`<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'💜'}</div><div style="flex:1"><b style="font-size:20px">${esc(name)}</b><div class="mut">${S.habits.length} привычек</div></div><button class="ed" onclick="rename()">✏️</button></div>
+ return `<div class="prof"><div class="ava">${S.avatar?`<img src="${S.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'✅'}</div><div style="flex:1"><b style="font-size:20px">${esc(name)}</b><div class="mut">${S.habits.length} привычек</div></div><button class="ed" onclick="rename()">✏️</button></div>
  <div class="card"><h2>Как настроение сегодня?</h2><div class="moods">${MOODS.map((x,i)=>`<button class="${S.mood[k]===i+1?'on':''}" onclick="setMood(${i+1})">${x}</button>`).join('')}</div><button class="btn ghost w" onclick="editMoodNote()">📝 ${S.moodNotes[k]?'Изменить заметку':'Заметка к настроению'}</button>${S.moodNotes[k]?`<span class="nt">${esc(S.moodNotes[k])}</span>`:''}</div>
  <div class="card"><h2>✨ Мысль дня</h2><div class="quote">${q}</div><button class="btn ${S.favQuotes.includes(q)?'':'ghost'} w" onclick="toggleFavQuote()">${S.favQuotes.includes(q)?'★ В избранном':'☆ В избранное'}</button><button class="btn ghost w" onclick="shareQuote()">📤 Поделиться в Telegram</button></div>
  <div class="card"><h2>Твой игровой прогресс</h2><div class="stats"><div class="stat"><b>${completed()}</b><span class="mut">выполнений</span></div><div class="stat"><b>${S.shop.coins}</b><span class="mut">🪙 монет</span></div><div class="stat"><b>${achCount()}</b><span class="mut">достижений</span></div><div class="stat"><b>${S.pet.level}</b><span class="mut">уровень питомца</span></div></div></div>
- <div class="card"><h2>Быстрый переход</h2><button class="btn w" onclick="go('today')">☑️ Отметить привычки</button><button class="btn ghost w" onclick="go('quests')">📜 Мои квесты</button><button class="btn ghost w" onclick="go('ach')">🏆 Достижения · ${achCount()}/${ACH.length}</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты · ${S.favQuotes.length}</button><button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок · ${notesTotal()+moodNotesTotal()}</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="shareProgress()">📤 Поделиться прогрессом</button><button class="btn ghost w" onclick="go('calendar')">📅 Календарь</button></div>`;
+ <div class="card"><h2>Быстрый переход</h2><button class="btn w" onclick="go('today')">☑️ Отметить привычки</button><button class="btn ghost w" onclick="go('calendar')">📅 Календарь</button><button class="btn ghost w" onclick="go('quests')">📜 Мои квесты</button><button class="btn ghost w" onclick="go('ach')">🏆 Достижения · ${achCount()}/${ACH.length}</button><button class="btn ghost w" onclick="toggleMore()" aria-expanded="${moreOpen}">${moreOpen?'▲ Скрыть':'▼ Ещё'}</button>${moreOpen?`<button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок · ${notesTotal()+moodNotesTotal()}</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты · ${S.favQuotes.length}</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="shareProgress()">📤 Поделиться прогрессом</button><button class="btn ghost w" onclick="go('news')">📰 Новости трекера</button><button class="btn ghost w" onclick="go('about')">❓ О приложении</button>`:''}</div>`;
 }
 function vToday(){
  const k=fmt(sel),hs=S.habits.filter(h=>active(h,sel));let out=`<h1>${k===fmt(today())?'Сегодня':sel.getDate()+' '+MONTHS[sel.getMonth()]}</h1>${weekStrip()}`;
@@ -307,7 +372,7 @@ async function enableNotifications(){if(!('Notification'in window))return note('
 function checkReminders(){
  const now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),key=fmt(now)+'_'+time;if(lastReminder===key)return;
  const due=S.reminders.filter(r=>r.enabled&&r.time===time);if(!due.length)return;lastReminder=key;
- due.forEach(r=>{if('Notification'in window&&Notification.permission==='granted'){try{new Notification('FocusOnMe',{body:'🔔 '+r.name})}catch(e){note('🔔 '+r.name)}}else note('🔔 Напоминание: '+r.name)});
+ due.forEach(r=>{if('Notification'in window&&Notification.permission==='granted'){try{new Notification('FocusOnMeapps',{body:'🔔 '+r.name})}catch(e){note('🔔 '+r.name)}}else note('🔔 Напоминание: '+r.name)});
 }
 function vReminders(){return `<h1>🔔 Напоминания</h1><div class="card"><h2>Твои напоминания</h2><div class="mut">Напоминания проверяются, пока приложение открыто. Для уведомлений при закрытом приложении потребуется сервер или Telegram-бот.</div><button class="btn w" onclick="enableNotifications()">Разрешить уведомления</button><button class="btn ghost w" onclick="addReminder()">＋ Добавить напоминание</button></div><div class="card">${S.reminders.length?S.reminders.map(r=>`<div class="row"><div style="flex:1"><b>🔔 ${esc(r.name)}</b><div class="mut">${r.time} · ${r.enabled?'Включено':'Выключено'}</div></div><button class="btn ghost" onclick="toggleReminder('${r.id}')">${r.enabled?'Выкл.':'Вкл.'}</button><button class="ed" onclick="removeReminder('${r.id}')">✕</button></div>`).join(''):'<div class="empty">Пока нет напоминаний</div>'}</div>`}
 function vAch(){
@@ -321,19 +386,20 @@ function toggleFavQuote(){const q=todayQuote(),i=S.favQuotes.indexOf(q);if(i>=0)
 function removeFavQuote(i){S.favQuotes.splice(i,1);save();render()}
 function vFav(){return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>⭐ Избранные цитаты</h1>${S.favQuotes.length?S.favQuotes.map((q,i)=>`<div class="card"><div class="quote">${esc(q)}</div><button class="btn ghost w" onclick="shareFavQuote(${i})">📤 Поделиться в Telegram</button><button class="btn danger w" onclick="removeFavQuote(${i})">Убрать из избранного</button></div>`).join(''):'<div class="card empty">⭐<br>Пока пусто. Нажми «В избранное» под мыслью дня на главной.</div>'}`}
 function vSettings(){
- return `<h1>⚙️ Настройки</h1><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}</span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Привычек пока нет</div>'}<button class="btn w" onclick="openEdit()">＋ Добавить привычку</button></div>
- <div class="card"><h2>Разделы</h2><button class="btn ghost w" onclick="go('ach')">🏆 Достижения</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты</button><button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="go('look')">🎨 Оформление</button></div>
+ return `<h1>⚙️ Настройки</h1><div class="card"><h2>Приложение</h2><div class="mut">Сейчас открыт: ✅ Трекер привычек. Можно вернуться к выбору: трекер привычек или план тренировок.</div><button class="btn w" onclick="backToChoice()">🔀 Изменить приложение</button><button class="btn ghost w" onclick="go('about')">❓ О приложении</button><button class="btn ghost w" onclick="openFeedback()">💬 Отправь пожелание или даже пообщайся с разработчиком</button><div class="mut" style="text-align:center;margin-top:6px">разработчик — vibe coder</div></div><div class="card"><h2>💜 Поддержать автора</h2><div class="mut">Возможность поддержать проект появится позже.</div><button class="btn w" onclick="supportSoon()">💜 Поддержать автора · в разработке</button></div><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}</span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Привычек пока нет</div>'}<button class="btn w" onclick="openEdit()">＋ Добавить привычку</button></div>
+ <div class="card"><h2>Разделы</h2><button class="btn ghost w" onclick="go('ach')">🏆 Достижения</button><button class="btn ghost w" onclick="go('fav')">⭐ Избранные цитаты</button><button class="btn ghost w" onclick="go('notes')">📓 Дневник заметок</button><button class="btn ghost w" onclick="go('news')">📰 Новости трекера</button><button class="btn ghost w" onclick="go('ref')">👥 Пригласить друзей</button><button class="btn ghost w" onclick="go('look')">🎨 Оформление</button></div>
  <div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="rename()">Изменить имя</button></div>
  <div class="card"><h2>🔊 Звуки</h2><div class="row"><span>Звуковые эффекты</span><button class="btn ${soundEnabled?'':'ghost'}" onclick="toggleSound()">${soundEnabled?'Включены':'Выключены'}</button></div></div>
- <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить копию</button><button class="btn danger w" onclick="resetAll()">Удалить все данные</button></div>`;
+ <div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить копию</button><button class="btn danger w" onclick="resetAll()">Удалить все данные</button></div><div class="credit">от создателя sqwizmy (основатель тгк FocusOnMe)</div>`;
 }
 function render(){
  grantSecrets();applyLook();
- const views={home:vHome,today:vToday,calendar:vCalendar,stats:vStats,week:vWeek,pet:vPet,shop:vShop,quests:vQuests,reminders:vReminders,ach:vAch,fav:vFav,notes:vNotes,ref:vRef,look:vLook,set:vSettings};
+ const views={home:vHome,today:vToday,calendar:vCalendar,stats:vStats,week:vWeek,pet:vPet,shop:vShop,quests:vQuests,reminders:vReminders,ach:vAch,fav:vFav,news:vNews,newsarch:vNewsArch,about:vAbout,notes:vNotes,ref:vRef,look:vLook,set:vSettings};
  $('#app').innerHTML=`<div class="screen-enter">${views[tab]()}</div>`;
  const nav=[['home','🏠'],['today','☑️'],['pet','🐾'],['stats','📊'],['set','⚙️']];
- $('#nav').innerHTML=nav.map(([t,i])=>`<button aria-label="${t}" class="${tab===t||(t==='home'&&['ach','fav','notes','ref','look'].includes(tab))?'on':''}" onclick="go('${t}')">${i}</button>`).join('');
+ $('#nav').innerHTML=nav.map(([t,i])=>`<button aria-label="${t}" class="${tab===t||(t==='home'&&['ach','fav','notes','ref','look','news','newsarch','about'].includes(tab))?'on':''}" onclick="go('${t}')">${i}</button>`).join('');
 }
+function toggleMore(){moreOpen=!moreOpen;render()}
 function go(t){tab=t;render();window.scrollTo(0,0);if(t==='ref')syncRef().then(()=>{if(tab==='ref')render()})}
 function pick(k,jump=false){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}
 function mo(n){calM=new Date(calM.getFullYear(),calM.getMonth()+n,1);render()}
@@ -359,11 +425,52 @@ function openEdit(id){
 function exportData(){const v=JSON.stringify(S);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Резервная копия скопирована')).catch(()=>ask('Скопируй текст',v,()=>{},10000));else ask('Скопируй текст',v,()=>{},10000)}
 function importData(){ask('Вставь резервную копию','',v=>{try{S=Object.assign(S,JSON.parse(v));normalize();initPet();save();render();if(S.pet.activeTask)startPetTimer();note('Данные восстановлены')}catch(e){note('Не удалось прочитать копию')}},10000)}
 function resetAll(){sure('Удалить все привычки, достижения и историю?',()=>{if(petTimerInterval){clearInterval(petTimerInterval);petTimerInterval=null}S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[],activeTask:null},shop:{coins:0,owned:[],equipped:''},reminders:[],claimedQuests:{},favQuotes:[],notes:{},moodNotes:{},ref:{code:'',by:'',invited:0,claimed:[]},shares:0,sx:{night:0,early:0,got:[]},look:{bg:'default',skin:'default',bgs:['default'],skins:['default']}};save();render()})}
+function showChoice(){
+ $('#gate').style.display='none';$('#choice').style.display='flex';
+}
+function comingSoon(n){note(n?'🚧 «'+n+'» пока в разработке. Скоро он появится в приложении!':'🚧 Этот раздел пока в разработке.')}
+function supportSoon(){note('🚧 Возможность поддержать автора пока в разработке. Скоро она появится!')}
+const MAIN_NEWS=[
+ {id:'0001',date:'22.11.2026',title:'Вышел набор полезных приложений FocusOnMeapps',text:['FocusOnMeapps — это набор полезных приложений, которые помогают сфокусироваться на себе и стать лучше.','Выбирай нужный раздел в меню: трекер привычек уже доступен, а остальные приложения набора скоро появятся.']},
+ {id:'0002',date:'22.11.2026',title:'Вышел трекер привычек',text:['Первое приложение набора уже с тобой — трекер привычек от FocusOnMe.','Внутри: привычки с целями и сериями, питомец, который растёт и эволюционирует, монеты, магазин аксессуаров, фоны и скины, ежедневные и недельные квесты.','Также есть более 80 достижений, среди которых секретные, отметка настроения, заметки, 200 цитат на каждый день и приглашение друзей с наградами.','Начни с первой привычки и сделай шаг к лучшей версии себя.']}
+];
+const TRACKER_NEWS=[
+ {id:'0001',date:'22.11.2026',title:'Вышел трекер от FocusOnMe',text:['Я запустил трекер привычек — твоего спутника на пути к лучшей версии себя.','Добавляй привычки, отмечай их каждый день, зарабатывай монеты и прокачивай питомца. Следи за прогрессом в календаре и статистике, веди заметки и собирай достижения.','Это только начало: впереди новые функции и обновления. Следи за новостями здесь.']}
+];
+const MAIN_NEWS_ARCHIVE=[];
+const TRACKER_NEWS_ARCHIVE=[];
+function archiveHtml(list){return list.length?newsHtml(list):'<div class="card empty">🗄️<br>Архив пока пуст. Здесь будут старые новости.</div>'}
+function newsHtml(list){return list.slice().sort((a,b)=>b.id.localeCompare(a.id)).map(n=>`<div class="card newsitem"><div class="tag">#${n.id} · ${esc(n.date)}</div><h2>${esc(n.title)}</h2>${n.text.map(t=>'<p>'+esc(t)+'</p>').join('')}</div>`).join('')}
+const CREDITHTML='<div class="credit">от создателя sqwizmy (основатель тгк FocusOnMe)</div>';
+const FEEDBACK_URL='https://t.me/anonimnyye_voprosy_bot?start=czjpr';
+function openFeedback(){try{if(tg?.openTelegramLink)tg.openTelegramLink(FEEDBACK_URL);else window.open(FEEDBACK_URL,'_blank')}catch(e){window.open(FEEDBACK_URL,'_blank')}}
+function showAbout(){
+ const el=$('#newsMain');
+ el.innerHTML=`<div class="gatebox about" style="text-align:left"><button class="btn ghost" onclick="closeMainNews()">‹ Назад</button><h1>❓ Для чего этот набор приложений</h1><div class="card"><p>FocusOnMeapps — это набор простых приложений, которые помогают сфокусироваться на себе и стать лучше каждый день.</p><p>Каждое приложение помогает в своей области: привычки, здоровье, цели, спокойствие. Выбирай нужное в меню — всё в одном месте, прямо в Telegram.</p><p>Сейчас доступен трекер привычек, остальные приложения набора в разработке и скоро появятся.</p><p>Есть идея или пожелание? Напиши разработчику (vibe coder) — каждое сообщение важно.</p></div><button class="btn w" onclick="openFeedback()">💬 Отправь пожелание или даже пообщайся с разработчиком</button><div class="mut" style="text-align:center;margin-top:6px">разработчик — vibe coder</div>${CREDITHTML}</div>`;
+ $('#choice').style.display='none';el.style.display='flex';el.scrollTop=0;
+}
+function vAbout(){return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>❓ О приложении</h1><div class="card about"><p>Трекер привычек помогает выработать полезные привычки и не бросать их: отмечай выполненное, следи за сериями, статистикой и настроением.</p><p>Чтобы было интереснее, за выполнение дают монеты, питомец растёт, а достижения и квесты мотивируют идти дальше.</p><p>Заметки, цитаты на каждый день и друзья по приглашению делают путь приятнее.</p></div><button class="btn w" onclick="openFeedback()">💬 Отправь пожелание или даже пообщайся с разработчиком</button><div class="mut" style="text-align:center;margin-top:6px">разработчик — vibe coder</div>`}
+function showMainNews(){
+ const el=$('#newsMain');
+ el.innerHTML=`<div class="gatebox" style="text-align:left"><button class="btn ghost" onclick="closeMainNews()">‹ Назад</button><h1>📰 Новости</h1>${newsHtml(MAIN_NEWS)}<button class="btn ghost w" onclick="showMainArchive()">🗄️ Архив новостей</button></div>`;
+ $('#choice').style.display='none';el.style.display='flex';el.scrollTop=0;
+}
+function showMainArchive(){
+ const el=$('#newsMain');
+ el.innerHTML=`<div class="gatebox" style="text-align:left"><button class="btn ghost" onclick="showMainNews()">‹ К новостям</button><h1>🗄️ Архив новостей</h1>${archiveHtml(MAIN_NEWS_ARCHIVE)}</div>`;
+ el.scrollTop=0;
+}
+function closeMainNews(){$('#newsMain').style.display='none';$('#choice').style.display='flex'}
+function vNews(){return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>📰 Новости трекера</h1>${newsHtml(TRACKER_NEWS)}<button class="btn ghost w" onclick="go('newsarch')">🗄️ Архив новостей</button>`}
+function vNewsArch(){return `<button class="btn ghost" onclick="go('news')">‹ К новостям</button><h1>🗄️ Архив новостей</h1>${archiveHtml(TRACKER_NEWS_ARCHIVE)}`}
+function backToChoice(){
+ $('#app').style.display='none';$('#nav').style.display='none';$('#choice').style.display='flex';window.scrollTo(0,0);
+}
 function showApp(){
- $('#gate').style.display='none';$('#banner').style.display='block';$('#nav').style.display='flex';$('#app').style.display='block';
+ $('#gate').style.display='none';$('#choice').style.display='none';$('#banner').style.display='block';$('#nav').style.display='flex';$('#app').style.display='block';
  if(!window.__loaded){window.__loaded=true;load()}
  if(!reminderTimer)reminderTimer=setInterval(checkReminders,15000);
- handleStartParam();
+ handleStartParam();syncRef();
 }
 
 /* ===== 50 НОВЫХ ДОСТИЖЕНИЙ ===== */
@@ -471,7 +578,7 @@ function changeAvatar(){
     S.avatar=canvas.toDataURL('image/jpeg',0.82);
     save();
     render();
-    note('Аватар успешно изменён! 💜');
+    note('Аватар успешно изменён! ✅');
    };
    img.onerror=()=>note('Не удалось открыть изображение.');
    img.src=reader.result;
@@ -517,13 +624,15 @@ normalize=function(){
 };
 
 /* ===== ЗАМЕТКИ, ПОДЕЛИТЬСЯ, РЕФЕРАЛЫ ===== */
-const BOT_USERNAME='@Trackerfom_bot'; // username бота без @
-const REF_API=''; // адрес сервера для учёта приглашений (необязательно)
+const BOT_USERNAME='Trackerfom_bot'; // username бота без @
+const APP_SHORT_NAME=''; // короткое имя Mini App из BotFather (если не задан «главный» Mini App бота)
+const REF_API=''; // адрес сервера referral-server.js, например https://my-server.example.com
 const INVITEE_BONUS=50;
 const REF_REWARDS=[{n:1,coins:50},{n:3,coins:150},{n:5,coins:300},{n:10,coins:700}];
 function botReady(){return BOT_USERNAME&&BOT_USERNAME!=='YOUR_BOT_USERNAME'}
 function appLink(){return botReady()?'https://t.me/'+BOT_USERNAME:'https://t.me/focus_iron'}
-function refLink(){return botReady()?'https://t.me/'+BOT_USERNAME+'?startapp=ref_'+S.ref.code:appLink()}
+function refLink(){return botReady()?'https://t.me/'+BOT_USERNAME+(APP_SHORT_NAME?'/'+APP_SHORT_NAME:'')+'?startapp=ref_'+S.ref.code:appLink()}
+function refId(){return Number.isInteger(S.ref.seq)?'#'+S.ref.seq:'—'}
 function notesTotal(){return Object.values(S.notes).reduce((n,o)=>n+Object.keys(o).length,0)}
 function moodNotesTotal(){return Object.keys(S.moodNotes).length}
 function withAch(fn){
@@ -567,40 +676,69 @@ function shareTG(text,url){
  try{if(tg?.openTelegramLink)tg.openTelegramLink(link);else window.open(link,'_blank')}catch(e){window.open(link,'_blank')}
  withAch(()=>{S.shares++});
 }
-function shareQuote(){shareTG('💜 «'+todayQuote()+'»\n— FocusOnMe',refLink())}
-function shareFavQuote(i){const q=S.favQuotes[i];if(q)shareTG('💜 «'+q+'»\n— FocusOnMe',refLink())}
-function shareAch(id){const a=ACH.find(x=>x.id===id);if(a)shareTG('🏆 Я открыл достижение «'+a.name+'» '+a.icon+' в FocusOnMe!',refLink())}
+function shareQuote(){shareTG('✅ «'+todayQuote()+'»\n— FocusOnMeapps',refLink())}
+function shareFavQuote(i){const q=S.favQuotes[i];if(q)shareTG('✅ «'+q+'»\n— FocusOnMeapps',refLink())}
+function shareAch(id){const a=ACH.find(x=>x.id===id);if(a)shareTG('🏆 Я открыл достижение «'+a.name+'» '+a.icon+' в FocusOnMeapps!',refLink())}
 function shareProgress(){
  const best=Math.max(0,...S.habits.map(streak));
- shareTG('💜 Мой прогресс в FocusOnMe:\n✅ Выполнено привычек: '+completed()+'\n🔥 Лучшая серия: '+best+' дн.\n🐾 Уровень питомца: '+S.pet.level+'\n🏆 Достижений: '+achCount()+'/'+ACH.length,refLink());
+ shareTG('✅ Мой прогресс в FocusOnMeapps:\n✅ Выполнено привычек: '+completed()+'\n🔥 Лучшая серия: '+best+' дн.\n🐾 Уровень питомца: '+S.pet.level+'\n🏆 Достижений: '+achCount()+'/'+ACH.length,refLink());
 }
 /* --- Рефералы --- */
-function applyRef(code){
+const REF_ERR={bad_code:'Такого кода не существует.',self:'Нельзя использовать свой код.',already:'Ты уже использовал код приглашения.'};
+async function refCall(referrer){
+ const r=await fetch(REF_API+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tg?.initData||'',referrer:referrer||''})});
+ return r.json();
+}
+function applyServerRef(d){
+ withAch(()=>{
+  if(Number.isInteger(d.seq))S.ref.seq=d.seq;
+  if(d.code)S.ref.code=d.code;
+  S.ref.invited=Math.max(0,Number(d.invited)||0);
+  if(d.referred)S.ref.by=S.ref.by||'server';
+  S.ref.pending='';
+  if(d.applied)S.shop.coins+=INVITEE_BONUS;
+ });
+ if(d.applied)note('🎁 Бонус за приглашение: +'+INVITEE_BONUS+' 🪙');
+}
+let refSyncing=false;
+async function syncRef(){
+ if(!REF_API||refSyncing)return;refSyncing=true;
+ try{const d=await refCall(S.ref.pending);if(d&&d.ok)applyServerRef(d)}catch(e){}
+ refSyncing=false;
+}
+async function applyRef(code){
  code=String(code||'').trim().replace(/^ref_/,'');
  if(!code)return note('Введи код друга');
  if(S.ref.by)return note('Ты уже использовал код приглашения.');
  if(code===S.ref.code)return note('Нельзя использовать свой код.');
+ if(REF_API){
+  try{
+   const d=await refCall(code);
+   if(d&&d.ok){applyServerRef(d);if(!d.applied)note(REF_ERR[d.refError]||'Не удалось применить код.')}
+   else note('Не удалось связаться с сервером. Попробуй позже.');
+  }catch(e){note('Не удалось связаться с сервером. Попробуй позже.')}
+  return;
+ }
  withAch(()=>{S.ref.by=code;S.shop.coins+=INVITEE_BONUS});
  note('🎁 Бонус за приглашение: +'+INVITEE_BONUS+' 🪙');
- if(REF_API){try{fetch(REF_API+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({referrer:code,user:S.ref.code})}).catch(()=>{})}catch(e){}}
 }
 function handleStartParam(){
  const p=tg?.initDataUnsafe?.start_param;
- if(p&&String(p).startsWith('ref_')&&!S.ref.by&&String(p).slice(4)!==S.ref.code)applyRef(p);
-}
-async function syncRef(){
- if(!REF_API)return;
- try{const r=await fetch(REF_API+'/count?code='+encodeURIComponent(S.ref.code));const d=await r.json();const n=Number(d.invited);if(Number.isFinite(n)&&n>S.ref.invited){withAch(()=>{S.ref.invited=n})}}catch(e){}
+ if(!p||!String(p).startsWith('ref_')||S.ref.by)return;
+ const c=String(p).slice(4);if(!c||c===S.ref.code)return;
+ if(REF_API){S.ref.pending=c;save()}else applyRef(c);
 }
 function enterRefCode(){ask('Код друга','',v=>applyRef(v),40)}
-function copyRef(){
- const v=refLink();
- if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note('Ссылка скопирована')).catch(()=>ask('Скопируй ссылку',v,()=>{},300));
- else ask('Скопируй ссылку',v,()=>{},300);
+function copyText(v,msg){
+ if(navigator.clipboard?.writeText)navigator.clipboard.writeText(v).then(()=>note(msg)).catch(()=>ask('Скопируй текст',v,()=>{},300));
+ else ask('Скопируй текст',v,()=>{},300);
 }
+function copyRef(){copyText(refLink(),'Ссылка скопирована')}
+function copyRefCode(){copyText(S.ref.code,'Код приглашения скопирован')}
+function copyRefId(){if(!Number.isInteger(S.ref.seq))return note('ID ещё не присвоен. Открой раздел позже.');copyText(refId(),'ID скопирован')}
 function shareInvite(){
  if(!botReady())return note('Сначала укажи BOT_USERNAME в коде приложения.');
- shareTG('💜 Присоединяйся к FocusOnMe — трекер привычек с питомцем! Получи +'+INVITEE_BONUS+' 🪙 по моей ссылке.',refLink());
+ shareTG('✅ Присоединяйся к FocusOnMeapps — трекер привычек с питомцем! Получи +'+INVITEE_BONUS+' 🪙 по моей ссылке.',refLink());
 }
 function claimRef(n){
  const r=REF_REWARDS.find(x=>x.n===n);if(!r||S.ref.invited<n||S.ref.claimed.includes(n))return;
@@ -610,7 +748,8 @@ function claimRef(n){
 function vRef(){
  const r=S.ref;
  return `<button class="btn ghost" onclick="go('home')">‹ Назад</button><h1>👥 Пригласить друзей</h1>
- <div class="card"><h2>Твоя ссылка</h2><div class="mut">Друг получит +${INVITEE_BONUS} 🪙 при входе по ссылке, а ты — награды за приглашённых.</div><div class="quote" style="font-size:13px;word-break:break-all;margin-top:10px">${esc(refLink())}</div><div class="mut" style="margin-top:8px">Твой код: <b>${esc(r.code)}</b></div><button class="btn w" onclick="shareInvite()">📤 Отправить в Telegram</button><button class="btn ghost w" onclick="copyRef()">📋 Скопировать ссылку</button></div>
+ <div class="card"><h2>Твои данные</h2><div class="row"><div><div class="mut">Твой ID</div><b style="font-size:20px">${esc(refId())}</b></div><button class="btn ghost" onclick="copyRefId()">📋 Копировать</button></div><div class="row"><div><div class="mut">Твой код приглашения</div><b style="font-size:20px;word-break:break-all">${esc(r.code)}</b></div><button class="btn ghost" onclick="copyRefCode()">📋 Копировать</button></div>${REF_API?'':'<div class="mut">ID и учёт приглашённых заработают после подключения сервера.</div>'}</div>
+ <div class="card"><h2>Твоя ссылка</h2><div class="mut">Друг получит +${INVITEE_BONUS} 🪙 при входе по ссылке, а ты — награды за приглашённых.</div><div class="quote" style="font-size:13px;word-break:break-all;margin-top:10px">${esc(refLink())}</div><button class="btn w" onclick="shareInvite()">📤 Отправить в Telegram</button><button class="btn ghost w" onclick="copyRef()">📋 Скопировать ссылку</button></div>
  <div class="card"><h2>Награды за друзей · приглашено ${r.invited}</h2>${REF_REWARDS.map(x=>{const done=r.invited>=x.n,got=r.claimed.includes(x.n);return `<div class="row"><div style="flex:1"><b>👤 ${x.n} ${x.n===1?'друг':x.n<5?'друга':'друзей'}</b><div class="bar"><i style="width:${Math.round(Math.min(r.invited,x.n)/x.n*100)}%"></i></div><div class="mut">${Math.min(r.invited,x.n)}/${x.n} · награда ${x.coins} 🪙</div></div><button class="btn ${got?'ghost':''}" ${!done||got?'disabled':''} onclick="claimRef(${x.n})">${got?'Получено':done?'Забрать':'В процессе'}</button></div>`}).join('')}</div>
  <div class="card"><h2>Меня пригласили</h2>${r.by?`<div class="mut">Ты уже использовал код приглашения ✓</div>`:`<div class="mut">Есть код друга? Введи его и получи +${INVITEE_BONUS} 🪙.</div><button class="btn ghost w" onclick="enterRefCode()">Ввести код друга</button>`}</div>`;
 }
@@ -633,7 +772,7 @@ function vRef(){
 
 /* ===== СЕКРЕТНЫЕ ДОСТИЖЕНИЯ, ФОНЫ И СКИНЫ ===== */
 const BGS=[
- {id:'default',name:'Фиолетовый',css:'radial-gradient(ellipse at top,#211033 0,#090611 55%)'},
+ {id:'default',name:'Фиолетовый',css:'radial-gradient(ellipse at top,#2a0a47 0,#0a0414 55%)'},
  {id:'dusk',name:'Сумерки',css:'radial-gradient(ellipse at top,#4a1d57 0,#1a0b2e 45%,#07040d 100%)'},
  {id:'aurora',name:'Аврора',css:'linear-gradient(160deg,#07131f 0,#0f3d3a 40%,#3b1a6b 80%,#090611 100%)'},
  {id:'cosmos',name:'Космос',css:'radial-gradient(circle at 20% 15%,#4b1d8f 0,transparent 35%),radial-gradient(circle at 80% 70%,#0d4d7a 0,transparent 40%),#04020a'}
@@ -692,7 +831,7 @@ const SECRETS=[
  ['x07','🏃','Марафонец','Держи серию привычки 30 дней',()=>Math.max(0,...S.habits.map(streak))>=30,{coins:500,bg:'aurora'}],
  ['x08','⚡','Десять за день','Выполни 10 привычек за один день',()=>dayCounts().some(x=>x.done>=10),{coins:600,skin:'gold'}],
  ['x09','🏛️','Хранитель привычек','Выполни 500 привычек',()=>completed()>=500,{coins:2000}],
- ['x10','🌌','Легенда FocusOnMe','Открой 60 обычных достижений',()=>ACH.filter(a=>!a.secret&&a.val()>=a.goal).length>=60,{coins:3000,bg:'cosmos',skin:'cosmic'}]
+ ['x10','🌌','Легенда FocusOnMeapps','Открой 60 обычных достижений',()=>ACH.filter(a=>!a.secret&&a.val()>=a.goal).length>=60,{coins:3000,bg:'cosmos',skin:'cosmic'}]
 ];
 SECRETS.forEach(([id,icon,name,desc,f,reward])=>ACH.push({id,icon,name,desc,goal:1,val:()=>f()?1:0,secret:true,reward}));
 /* ===== ГОТОВО ===== */
