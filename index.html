@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -49,44 +50,143 @@ input[type=text],select{width:100%;border:2px solid var(--line);background:var(-
 .row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
 .pet{text-align:center;padding:18px 10px}.petface{font-size:76px;line-height:1.2;margin:8px}.petbar{height:10px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}.petbar i{display:block;height:100%;background:linear-gradient(90deg,#f4b45e,#ee6677);border-radius:20px}
 .ach{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.ach:last-child{border:0}.achico{width:48px;height:48px;border-radius:15px;background:var(--soft);display:grid;place-items:center;font-size:25px;flex:none}.ach.lock{opacity:.48}.ach b{display:block}.tag{font-size:11px;color:var(--ac);font-weight:700}
+#adBanner{display:none;position:sticky;top:0;z-index:20;max-width:520px;margin:0 auto;background:var(--card);color:var(--tx);padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);font-size:13px}
+#adBanner a{color:#ee6677;font-weight:700;text-decoration:none;margin-left:6px}
 #gate{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);padding:24px;align-items:center;justify-content:center;text-align:center}
 #gate .gatebox{width:100%;max-width:420px;background:var(--card);padding:26px 20px;border-radius:24px;box-shadow:var(--sh)}
 #gate .gateicon{font-size:56px;margin-bottom:12px}#gate p{color:var(--mut);line-height:1.55}
-#gate a{display:block;text-decoration:none;margin:16px 0}
-#gate button{width:100%;margin-top:8px}
+#gate a{display:block;text-decoration:none;margin:16px 0}#gate button{width:100%;margin-top:8px}
 </style>
 </head>
 <body>
-<div id="gate"><div class="gatebox"><div class="gateicon">🔒</div><h1>Доступ закрыт</h1><p id="gateText">Чтобы пользоваться трекером, подпишись на Telegram-канал.</p><a href="https://t.me/focus_iron" target="_blank" rel="noopener"> <button class="btn">Подписаться на канал</button></a><button class="btn ghost" id="checkSub">Проверить подписку</button></div></div>
-<div id="app"></div><nav id="nav"></nav>
+
+<!-- Реклама Telegram-канала -->
+<div id="adBanner">
+  📢 Подписывайся на мой Telegram-канал!
+  <a href="https://t.me/focus_iron" target="_blank" rel="noopener">@focus_iron</a>
+</div>
+
+<!-- Начальный экран подписки -->
+<div id="gate">
+  <div class="gatebox">
+    <div class="gateicon">📢</div>
+    <h1>Подпишись на канал!</h1>
+    <p>Поддержи проект! Подписывайся на мой Telegram-канал @focus_iron.</p>
+    <a href="https://t.me/focus_iron" target="_blank" rel="noopener">
+      <button class="btn">Подписаться на канал</button>
+    </a>
+    <button class="btn ghost" id="continueBtn">Продолжить</button>
+  </div>
+</div>
+
+<div id="app"></div>
+<nav id="nav"></nav>
+
 <script>
-const tg=window.Telegram?.WebApp;try{if(tg){tg.ready();tg.expand()}}catch(e){}
-window.onerror=(m,u,l)=>{try{tg.showAlert('Ошибка: '+m+' (строка '+l+')')}catch(e){alert('Ошибка: '+m+' (строка '+l+')')}};
+const tg=window.Telegram?.WebApp;
+try{if(tg){tg.ready();tg.expand()}}catch(e){}
+
+function showRuntimeError(message){
+  let box=document.getElementById('runtimeError');
+  if(!box){
+    box=document.createElement('div');
+    box.id='runtimeError';
+    box.style.cssText='position:fixed;inset:0;z-index:9999;background:#fff;color:#222;padding:24px;font:15px/1.5 system-ui;overflow:auto';
+    document.body.appendChild(box);
+  }
+  box.innerHTML='<h2>Не удалось запустить приложение</h2><p></p><p>Скопируйте текст ошибки и отправьте разработчику.</p>';
+  box.querySelector('p').textContent=String(message);
+}
+window.onerror=(m,u,l)=>{showRuntimeError(String(m)+' (строка '+l+')');return true};
+window.addEventListener('unhandledrejection',e=>showRuntimeError(e.reason?.message||e.reason||'Неизвестная ошибка'));
+
 const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const PRESETS=[['🚶','Прогулка',1],['💧','Пить воду',8],['🧘','Медитация',1],['🏃','Бег',1],['💪','Тренировка',1],['🛏️','Спать вовремя',1],['📖','Читать',1],['🍳','Завтрак',1],['🚴','Велосипед',1]];
 const COLORS=['#7adfba','#e9a9a9','#b7d3e0','#d985b8','#5dbde0','#e3a75f','#f4c97b','#ee6677'];
 const MOODS=['😞','😕','😐','🙂','😄'];
 const QUOTES=['Маленький шаг каждый день — это уже путь','Сегодня лучше, чем вчера','Дисциплина — это забота о себе','Не идеально, а регулярно','Ты уже сделал больше, чем думаешь','Начни там, где стоишь','Привычки строят характер','Один день — одна победа','Прогресс важнее скорости','Отдых — тоже часть плана','Верь процессу'];
+
 const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const today=()=>{let d=new Date();d.setHours(0,0,0,0);return d},add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return x},wd=d=>(d.getDay()+6)%7,mon=d=>add(d,-wd(d));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=s=>document.querySelector(s);
-let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пушистик',level:1,xp:0,lastDate:'',done:[]}},tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
+
+let S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}},tab='home',sel=today(),calM=today(),weekStart=mon(today()),fh='all';
 const KEY='habits_v2',CH=3000;
+
 function cloud(){try{return tg&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null}catch(e){return null}}
-function save(){let v=JSON.stringify(S);try{localStorage.setItem(KEY,v)}catch(e){}let cs=cloud();if(!cs)return;try{let n=Math.ceil(v.length/CH);for(let i=0;i<n;i++)cs.setItem(KEY+i,v.slice(i*CH,(i+1)*CH));cs.setItem(KEY+'n',String(n))}catch(e){}}
-function load(cb){let local='';try{local=localStorage.getItem(KEY)||''}catch(e){}let cs=cloud(),done=false;const fin=v=>{if(done)return;done=true;try{if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}cb()};if(!cs)return fin(local);setTimeout(()=>fin(local),2500);try{cs.getItem(KEY+'n',(e,n)=>{n=+n;if(!n)return fin(local);let keys=Array.from({length:n},(_,i)=>KEY+i);cs.getItems(keys,(e2,o)=>fin(o?keys.map(k=>o[k]||'').join(''):local))})}catch(e){fin(local)}}
+function save(){
+  let v=JSON.stringify(S);
+  try{localStorage.setItem(KEY,v)}catch(e){}
+  let cs=cloud();if(!cs)return;
+  try{let n=Math.ceil(v.length/CH);for(let i=0;i<n;i++)cs.setItem(KEY+i,v.slice(i*CH,(i+1)*CH));cs.setItem(KEY+'n',String(n))}catch(e){}
+}
+function load(cb){
+  let local='';try{local=localStorage.getItem(KEY)||''}catch(e){}
+  let cs=cloud(),done=false;
+  const fin=v=>{if(done)return;done=true;try{if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}cb()};
+  if(!cs)return fin(local);
+  setTimeout(()=>fin(local),2500);
+  try{cs.getItem(KEY+'n',(e,n)=>{
+    n=+n;if(!n)return fin(local);
+    let keys=Array.from({length:n},(_,i)=>KEY+i);
+    cs.getItems(keys,(e2,o)=>fin(o?keys.map(k=>o[k]||'').join(''):local))
+  })}catch(e){fin(local)}
+}
+
 const buzz=t=>tg?.HapticFeedback?.impactOccurred(t||'light');
 const cnt=(k,id)=>(S.log[k]||{})[id]||0,active=(h,d)=>h.days.includes(wd(d)),ok=(k,h)=>cnt(k,h.id)>=h.goal;
-function setCnt(k,id,n){let o=S.log[k]||(S.log[k]={});if(n>0)o[id]=n;else delete o[id];if(!Object.keys(o).length)delete S.log[k]}
-function tap(k,id){let h=S.habits.find(x=>x.id===id);if(!h)return;let c=cnt(k,id);setCnt(k,id,c>=h.goal?0:c+1);save();buzz(c+1>=h.goal?'medium':'light');render()}
-function dayState(d,only){let k=fmt(d),hs=S.habits.filter(h=>active(h,d)&&(!only||only==='all'||h.id===only));if(!hs.length)return -1;let n=hs.filter(h=>ok(k,h)).length;return n===hs.length?2:hs.some(h=>cnt(k,h.id)>0)?1:0}
+
+function setCnt(k,id,n){
+  let o=S.log[k]||(S.log[k]={});
+  if(n>0)o[id]=n;else delete o[id];
+  if(!Object.keys(o).length)delete S.log[k]
+}
+function tap(k,id){
+  let h=S.habits.find(x=>x.id===id);if(!h)return;
+  let c=cnt(k,id);setCnt(k,id,c>=h.goal?0:c+1);
+  save();buzz(c+1>=h.goal?'medium':'light');render()
+}
+function dayState(d,only){
+  let k=fmt(d),hs=S.habits.filter(h=>active(h,d)&&(!only||only==='all'||h.id===only));
+  if(!hs.length)return -1;
+  let n=hs.filter(h=>ok(k,h)).length;
+  return n===hs.length?2:hs.some(h=>cnt(k,h.id)>0)?1:0
+}
 const cls=s=>s===2?'full':s===1?'part':s===-1?'off':'';
-function streak(h){let n=0,d=today(),first=true;for(let i=0;i<730;i++,first=false){if(active(h,d)){if(ok(fmt(d),h))n++;else if(!first)break}d=add(d,-1)}return n}
-function bestStreak(only){let hs=S.habits.filter(h=>only==='all'||h.id===only),best=0;hs.forEach(h=>{let c=0,d=add(today(),-730);for(let i=0;i<=730;i++,d=add(d,1)){if(!active(h,d))continue;if(ok(fmt(d),h)){c++;best=Math.max(best,c)}else c=0}});return best}
-function completed(){let n=0;Object.entries(S.log).forEach(([k,o])=>Object.entries(o).forEach(([id,c])=>{let h=S.habits.find(x=>x.id===id);if(h&&c>=h.goal)n++}));return n}
-function perfectDays(){let n=0;Object.keys(S.log).forEach(k=>{if(dayState(new Date(k+'T00:00:00'))===2)n++});return n}
-function petStage(){let n=completed();if(n>=100)return{icon:'♚',name:'Король',next:100,from:60,desc:'Ты прошёл весь путь. Твой питомец стал королём!'};if(n>=60)return{icon:'♛',name:'Ферзь',next:100,from:60,desc:'Почти вершина! Осталось немного до короля.'};if(n>=30)return{icon:'♜',name:'Ладья',next:60,from:30,desc:'Питомец стал сильнее и увереннее.'};if(n>=10)return{icon:'♞',name:'Конь',next:30,from:10,desc:'Питомец научился двигаться дальше.'};return{icon:'♟️',name:'Пешка',next:10,from:0,desc:'Каждая выполненная привычка приближает его к короне.'}}
+
+function streak(h){
+  let n=0,d=today(),first=true;
+  for(let i=0;i<730;i++,first=false){
+    if(active(h,d)){if(ok(fmt(d),h))n++;else if(!first)break}
+    d=add(d,-1)
+  }
+  return n
+}
+function bestStreak(only){
+  let hs=S.habits.filter(h=>only==='all'||h.id===only),best=0;
+  hs.forEach(h=>{
+    let c=0,d=add(today(),-730);
+    for(let i=0;i<=730;i++,d=add(d,1)){
+      if(!active(h,d))continue;
+      if(ok(fmt(d),h)){c++;best=Math.max(best,c)}else c=0
+    }
+  });
+  return best
+}
+function completed(){
+  let n=0;
+  Object.entries(S.log).forEach(([k,o])=>Object.entries(o).forEach(([id,c])=>{
+    let h=S.habits.find(x=>x.id===id);if(h&&c>=h.goal)n++
+  }));
+  return n
+}
+function perfectDays(){
+  let n=0;
+  Object.keys(S.log).forEach(k=>{if(dayState(new Date(k+'T00:00:00'))===2)n++});
+  return n
+}
+
 const ACH=[
 {id:'first',icon:'🌱',name:'Первый шаг',desc:'Выполни первую привычку',goal:1,val:()=>completed()},
 {id:'five',icon:'⭐',name:'Начало положено',desc:'Выполни 5 привычек',goal:5,val:()=>completed()},
@@ -119,88 +219,240 @@ const ACH=[
 {id:'mood50',icon:'🎨',name:'Палитра настроения',desc:'Отметь настроение 50 раз',goal:50,val:()=>Object.keys(S.mood).length},
 {id:'streak21',icon:'🌠',name:'Три недели постоянства',desc:'Серия выполнения — 21 день',goal:21,val:()=>Math.max(0,...S.habits.map(streak))}
 ];
+
 function achCount(){return ACH.filter(a=>a.val()>=a.goal).length}
 function dayLabel(d){return fmt(d)===fmt(today())?'Сегодня':d.getDate()+' '+MONTHS[d.getMonth()].toLowerCase()}
-function weekStrip(){let m=mon(sel);return '<div class="week">'+Array.from({length:7},(_,i)=>{let d=add(m,i);return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`}).join('')+'</div>'}
-function changeAvatar(){let input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=()=>{let f=input.files?.[0];if(!f)return;if(!f.type.startsWith('image/'))return note('Выберите изображение');let r=new FileReader();r.onload=()=>{let im=new Image();im.onload=()=>{let c=document.createElement('canvas');c.width=c.height=256;let x=c.getContext('2d'),side=Math.min(im.width,im.height);x.drawImage(im,(im.width-side)/2,(im.height-side)/2,side,side,0,0,256,256);S.avatar=c.toDataURL('image/jpeg',.8);save();render();note('Аватарка изменена!')};im.src=r.result};r.readAsDataURL(f)};input.click()}
+function weekStrip(){
+  let m=mon(sel);
+  return '<div class="week">'+Array.from({length:7},(_,i)=>{
+    let d=add(m,i);
+    return `<div class="day ${fmt(d)===fmt(sel)?'sel':''}" onclick="pick('${fmt(d)}')">${DAYS[i]}<div class="dot ${cls(dayState(d))}">${d.getDate()}</div></div>`
+  }).join('')+'</div>'
+}
+
+function changeAvatar(){
+  let input=document.createElement('input');input.type='file';input.accept='image/*';
+  input.onchange=()=>{
+    let f=input.files?.[0];if(!f)return;
+    if(!f.type.startsWith('image/'))return note('Выберите изображение');
+    let r=new FileReader();
+    r.onload=()=>{
+      let im=new Image();
+      im.onload=()=>{
+        let c=document.createElement('canvas');c.width=c.height=256;
+        let x=c.getContext('2d'),side=Math.min(im.width,im.height);
+        x.drawImage(im,(im.width-side)/2,(im.height-side)/2,side,side,0,0,256,256);
+        S.avatar=c.toDataURL('image/jpeg',.8);save();render();note('Аватарка изменена!')
+      };
+      im.src=r.result
+    };
+    r.readAsDataURL(f)
+  };
+  input.click()
+}
 function removeAvatar(){sure('Вернуть стандартную аватарку?',()=>{S.avatar='';save();render()})}
-function vHome(){let u=tg?.initDataUnsafe?.user,name=S.name||(u?u.first_name:'Гость'),k=fmt(today()),m=mon(today()),q=QUOTES[Math.floor(today()/864e5)%QUOTES.length];return `
+
+function vHome(){
+  let u=tg?.initDataUnsafe?.user,name=S.name||(u?u.first_name:'Гость'),k=fmt(today()),m=mon(today()),q=QUOTES[Math.floor(today()/864e5)%QUOTES.length];
+  return `
 <div class="prof"><div class="ava" onclick="changeAvatar()">${S.avatar?`<img src="${S.avatar}">`:u?.photo_url?`<img src="${esc(u.photo_url)}">`:'🙂'}</div><div style="flex:1"><b style="font-size:22px">${esc(name)}</b><div class="mut">${S.habits.length} привычек · серия до ${Math.max(0,...S.habits.map(streak))} дн.</div></div><button class="ed" onclick="rename()">✏️</button></div>
 <div class="card"><h2>Как настроение сегодня?</h2><div class="moods">${MOODS.map((e,i)=>`<button class="${S.mood[k]===i+1?'on':''}" onclick="setMood(${i+1})">${e}</button>`).join('')}</div><div class="mrow">${Array.from({length:7},(_,i)=>{let d=add(m,i),v=S.mood[fmt(d)];return `<div>${DAYS[i]}<span>${v?MOODS[v-1]:'·'}</span></div>`}).join('')}</div></div>
 <div class="card"><h2>Ежедневная цитата</h2><div class="quote">${q}</div></div>
-<div class="card"><h2>Твой прогресс</h2><div class="stats"><div><b>${completed()}</b><span class="mut">выполнений</span></div><div><b>${achCount()}/${ACH.length}</b><span class="mut">достижений</span></div></div><button class="btn ghost w" onclick="go('ach')">Посмотреть награды 🏆</button></div>`}
-function vToday(){let k=fmt(sel),hs=S.habits.filter(h=>active(h,sel)),h=`<h1>${dayLabel(sel)}</h1>`+weekStrip();if(!S.habits.length)return h+`<div class="empty"><b>🚀</b>Привычек пока нет.<br>Добавьте первую:</div><button class="btn w" onclick="openEdit()">+ Добавить привычку</button>`;if(!hs.length)h+=`<div class="empty"><b>🌿</b>На этот день привычек нет</div>`;h+=hs.map(x=>{let c=cnt(k,x.id),on=c>=x.goal;return `<div class="h ${on?'on':''}" onclick="tap('${k}','${x.id}')"><div class="e" style="background:${x.color}33">${x.emoji}</div><div class="n">${esc(x.name)}<div class="mut">${streak(x)?'🔥 серия '+streak(x):'серии нет'}</div></div><div class="chk" style="${on?'background:'+x.color:''}">${x.goal>1?c+'/'+x.goal:on?'✓':''}</div><button class="ed" onclick="event.stopPropagation();openEdit('${x.id}')">⋯</button></div>`}).join('');return h+'<button class="btn ghost w" onclick="openEdit()">+ Добавить привычку</button>'}
-function vStats(){let y=calM.getFullYear(),m=calM.getMonth(),start=mon(new Date(y,m,1)),days=[];for(let i=0;i<42;i++)days.push(add(start,i));if(days[35].getMonth()!==m)days.length=35;let t=today(),dim=new Date(y,m+1,0).getDate(),tot=0,hit=0,perfect=0,all=0;for(let d=1;d<=dim;d++){let dt=new Date(y,m,d);if(dt>t)break;S.habits.filter(h=>active(h,dt)&&(fh==='all'||h.id===fh)).forEach(h=>{tot++;if(ok(fmt(dt),h))hit++});if(dayState(dt,fh)===2)perfect++}Object.entries(S.log).forEach(([k,o])=>Object.keys(o).forEach(id=>{if(fh==='all'||id===fh)all++}));let p=tot?Math.round(hit/tot*100):0;return `<h1>Статистика</h1><select onchange="fh=this.value;render()"><option value="all">Все привычки</option>${S.habits.map(h=>`<option value="${h.id}" ${fh===h.id?'selected':''}>${h.emoji} ${esc(h.name)}</option>`).join('')}</select><div class="card" style="margin-top:10px"><div class="navrow"><button onclick="mo(-1)">‹</button>${MONTHS[m]} ${y}<button onclick="mo(1)">›</button></div><div class="cal">${DAYS.map(d=>`<div class="mut">${d}</div>`).join('')}${days.map(d=>`<div class="dot ${cls(dayState(d,fh))} ${d.getMonth()!==m?'out':''}" onclick="pick('${fmt(d)}',1)">${d.getDate()}</div>`).join('')}</div></div><div class="card"><div class="ring" style="--p:${p}"><div><b>${p}%</b><span class="mut">за месяц</span></div></div><div class="stats"><div><b>${bestStreak(fh)}</b><span class="mut">лучшая серия</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div><div><b>${hit}</b><span class="mut">выполнено</span></div><div><b>${all}</b><span class="mut">отметок всего</span></div></div></div>`}
-function vWeek(){let w=Array.from({length:7},(_,i)=>add(weekStart,i)),p=n=>String(n).padStart(2,'0'),rng=`${p(w[0].getDate())}.${p(w[0].getMonth()+1)} – ${p(w[6].getDate())}.${p(w[6].getMonth()+1)}`,hit=0,tot=0,perfect=0;w.forEach(d=>{if(dayState(d)===2)perfect++;S.habits.filter(h=>active(h,d)).forEach(h=>{tot++;if(ok(fmt(d),h))hit++})});let rows=S.habits.map(h=>`<tr><td class="nm">${h.emoji} ${esc(h.name)}</td>${w.map(d=>{let k=fmt(d),c=cnt(k,h.id),a=active(h,d);return `<td><div class="c" style="${ok(k,h)?'background:'+h.color:c?'background:'+h.color+'66':''};${a?'':'opacity:.35'}" onclick="${a?`tap('${k}','${h.id}')`:''}">${h.goal>1&&c?c:''}</div></td>`}).join('')}</tr>`).join(''),mrow=`<tr><td class="nm">😊 Настроение</td>${w.map(d=>`<td>${MOODS[(S.mood[fmt(d)]||0)-1]||''}</td>`).join('')}</tr>`;return `<h1>Недельный отчёт</h1><div class="card"><div class="navrow"><button onclick="wk(-1)">‹</button>${rng}<button onclick="wk(1)">›</button></div>${S.habits.length?`<div class="grid"><table><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>${rows}${mrow}</table></div>`:'<div class="empty">Добавьте привычки на вкладке «Сегодня»</div>'}</div><div class="card"><div class="stats"><div><b>${tot?Math.round(hit/tot*100):0}%</b><span class="mut">выполнено</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div></div></div>`}
-function vAchievements(){return `<h1>Достижения</h1><div class="card"><h2>🏆 Открыто · ${achCount()} из ${ACH.length}</h2>${ACH.map(a=>{let v=a.val(),done=v>=a.goal;return `<div class="ach ${done?'':'lock'}"><div class="achico">${done?a.icon:'🔒'}</div><div style="flex:1"><b>${a.name} ${done?'<span class="tag">ОТКРЫТО</span>':''}</b><div class="mut">${a.desc}</div><div class="mut">${Math.min(v,a.goal)} / ${a.goal}</div></div></div>`}).join('')}</div>`}
+<div class="card"><h2>Твой прогресс</h2><div class="stats"><div><b>${completed()}</b><span class="mut">выполнений</span></div><div><b>${achCount()}/${ACH.length}</b><span class="mut">достижений</span></div></div><button class="btn ghost w" onclick="go('ach')">Посмотреть награды 🏆</button></div>`
+}
 
-const PET_TASKS=[
-{id:'feed',icon:'🥕',name:'Покормить питомца',desc:'Позаботься о его энергии',xp:20},
-{id:'play',icon:'🎾',name:'Поиграть вместе',desc:'Немного веселья каждый день',xp:20},
-{id:'walk',icon:'🌳',name:'Прогуляться',desc:'Время для свежего воздуха',xp:30},
-{id:'train',icon:'🧠',name:'Потренироваться',desc:'Выучи с питомцем что-нибудь новое',xp:30}
-];
-const PET_FORMS=['🐣','🐥','🐤','🐱','🐈','🦊','🐺','🐯','🦁','🐉'];
+function vToday(){
+  let k=fmt(sel),hs=S.habits.filter(h=>active(h,sel)),h=`<h1>${dayLabel(sel)}</h1>`+weekStrip();
+  if(!S.habits.length)return h+`<div class="empty"><b>🚀</b>Привычек пока нет.<br>Добавьте первую:</div><button class="btn w" onclick="openEdit()">+ Добавить привычку</button>`;
+  if(!hs.length)h+=`<div class="empty"><b>🌿</b>На этот день привычек нет</div>`;
+  h+=hs.map(x=>{
+    let c=cnt(k,x.id),on=c>=x.goal;
+    return `<div class="h ${on?'on':''}" onclick="tap('${k}','${x.id}')"><div class="e" style="background:${x.color}33">${x.emoji}</div><div class="n">${esc(x.name)}<div class="mut">${streak(x)?'🔥 серия '+streak(x):'серии нет'}</div></div><div class="chk" style="${on?'background:'+x.color:''}">${x.goal>1?c+'/'+x.goal:on?'✓':''}</div><button class="ed" onclick="event.stopPropagation();openEdit('${x.id}')">⋯</button></div>`
+  }).join('');
+  return h+'<button class="btn ghost w" onclick="openEdit()">+ Добавить привычку</button>'
+}
+
+function detailedStats(){
+  const now=today(),y=calM.getFullYear(),m=calM.getMonth(),monthEnd=new Date(y,m+1,0);
+  let total=0,completedCount=0,activeDays=0,perfect=0;
+  const selectedHabits=S.habits.filter(h=>fh==='all'||h.id===fh);
+  const habitStats=selectedHabits.map(h=>{
+    let planned=0,done=0;
+    for(let d=1;d<=monthEnd.getDate();d++){
+      const date=new Date(y,m,d);if(date>now)break;if(!active(h,date))continue;
+      planned++;if(ok(fmt(date),h))done++;
+    }
+    total+=planned;completedCount+=done;
+    return {name:h.name,emoji:h.emoji,planned,done,percent:planned?Math.round(done/planned*100):0,streak:streak(h)};
+  });
+  for(let d=1;d<=monthEnd.getDate();d++){
+    const date=new Date(y,m,d);if(date>now)break;
+    const state=dayState(date,fh);if(state===1||state===2)activeDays++;if(state===2)perfect++;
+  }
+  return {total,completedCount,missed:Math.max(0,total-completedCount),activeDays,perfect,percent:total?Math.round(completedCount/total*100):0,habitStats};
+}
+
+function vStats(){
+  const y=calM.getFullYear(),m=calM.getMonth();let start=mon(new Date(y,m,1)),days=[];
+  for(let i=0;i<42;i++)days.push(add(start,i));if(days[35].getMonth()!==m)days.length=35;
+  const stats=detailedStats(),p=stats.percent;
+  return `<h1>Подробная статистика 📊</h1>
+  <select onchange="fh=this.value;render()"><option value="all">Все привычки</option>${S.habits.map(h=>`<option value="${h.id}" ${fh===h.id?'selected':''}>${h.emoji} ${esc(h.name)}</option>`).join('')}</select>
+  <div class="card"><div class="navrow"><button onclick="mo(-1)">‹</button>${MONTHS[m]} ${y}<button onclick="mo(1)">›</button></div>
+  <div class="cal">${DAYS.map(d=>`<div class="mut">${d}</div>`).join('')}${days.map(d=>`<div class="dot ${cls(dayState(d,fh))} ${d.getMonth()!==m?'out':''}" onclick="pick('${fmt(d)}',1)">${d.getDate()}</div>`).join('')}</div>
+  <div class="mut" style="margin-top:12px">Нажми на день, чтобы посмотреть привычки за эту дату.</div></div>
+  <div class="card"><h2>Общий прогресс</h2><div class="ring" style="--p:${p}"><div><b>${p}%</b><span class="mut">выполнено</span></div></div>
+  <div class="stats"><div><b>${stats.completedCount}</b><span class="mut">выполнено</span></div><div><b>${stats.missed}</b><span class="mut">пропущено</span></div><div><b>${stats.activeDays}</b><span class="mut">активных дней</span></div><div><b>${stats.perfect}</b><span class="mut">идеальных дней</span></div></div></div>
+  <div class="card"><h2>Статистика привычек</h2>${stats.habitStats.length?stats.habitStats.map(h=>`<div class="row"><div style="flex:1;min-width:0"><b>${h.emoji} ${esc(h.name)}</b><div class="mut">${h.done} из ${h.planned} выполнено</div><div class="petbar"><i style="width:${h.percent}%"></i></div><div class="mut">${h.percent}% · серия ${h.streak} дн.</div></div><b>${h.percent}%</b></div>`).join(''):'<div class="empty">Пока нет привычек</div>'}</div>
+  <div class="card"><h2>Дополнительные показатели</h2><div class="row"><span>🏆 Всего выполнений за всё время</span><b>${completed()}</b></div><div class="row"><span>🔥 Лучшая серия</span><b>${bestStreak(fh)} дн.</b></div><div class="row"><span>✨ Идеальных дней за всё время</span><b>${perfectDays()}</b></div><div class="row"><span>🎯 Всего привычек</span><b>${S.habits.length}</b></div><div class="row"><span>🏅 Получено достижений</span><b>${achCount()} / ${ACH.length}</b></div></div>`;
+}
+
+function vWeek(){
+  let w=Array.from({length:7},(_,i)=>add(weekStart,i)),p=n=>String(n).padStart(2,'0'),rng=`${p(w[0].getDate())}.${p(w[0].getMonth()+1)} – ${p(w[6].getDate())}.${p(w[6].getMonth()+1)}`,hit=0,tot=0,perfect=0;
+  w.forEach(d=>{if(dayState(d)===2)perfect++;S.habits.filter(h=>active(h,d)).forEach(h=>{tot++;if(ok(fmt(d),h))hit++})});
+  let rows=S.habits.map(h=>`<tr><td class="nm">${h.emoji} ${esc(h.name)}</td>${w.map(d=>{let k=fmt(d),c=cnt(k,h.id),a=active(h,d);return `<td><div class="c" style="${ok(k,h)?'background:'+h.color:c?'background:'+h.color+'66':''};${a?'':'opacity:.35'}" onclick="${a?`tap('${k}','${h.id}')`:''}">${h.goal>1&&c?c:''}</div></td>`}).join('')}</tr>`).join('');
+  let mrow=`<tr><td class="nm">😊 Настроение</td>${w.map(d=>`<td>${MOODS[(S.mood[fmt(d)]||0)-1]||''}</td>`).join('')}</tr>`;
+  return `<h1>Недельный отчёт</h1><div class="card"><div class="navrow"><button onclick="wk(-1)">‹</button>${rng}<button onclick="wk(1)">›</button></div>${S.habits.length?`<div class="grid"><table><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr>${rows}${mrow}</table></div>`:'<div class="empty">Добавьте привычки на вкладке «Сегодня»</div>'}</div><div class="card"><div class="stats"><div><b>${tot?Math.round(hit/tot*100):0}%</b><span class="mut">выполнено</span></div><div><b>${perfect}</b><span class="mut">идеальных дней</span></div></div></div>`
+}
+
+function vAchievements(){
+  return `<h1>Достижения</h1><div class="card"><h2>🏆 Открыто · ${achCount()} из ${ACH.length}</h2>${ACH.map(a=>{
+    let v=a.val(),done=v>=a.goal;
+    return `<div class="ach ${done?'':'lock'}"><div class="achico">${done?a.icon:'🔒'}</div><div style="flex:1"><b>${a.name} ${done?'<span class="tag">ОТКРЫТО</span>':''}</b><div class="mut">${a.desc}</div><div class="mut">${Math.min(v,a.goal)} / ${a.goal}</div></div></div>`
+  }).join('')}</div>`
+}
+
+const PET_TASKS=[{id:'feed',icon:'🥕',name:'Покормить питомца',desc:'Позаботься о его энергии',xp:20},{id:'play',icon:'🎾',name:'Поиграть вместе',desc:'Немного веселья каждый день',xp:20},{id:'walk',icon:'🌳',name:'Прогуляться',desc:'Время для свежего воздуха',xp:30},{id:'train',icon:'🧠',name:'Потренироваться',desc:'Выучи с питомцем что-нибудь новое',xp:30}];
+const PET_FORMS=[{level:1,icon:'♟️',name:'Пешка'},{level:5,icon:'♞',name:'Конь'},{level:10,icon:'♝',name:'Слон'},{level:15,icon:'♜',name:'Ладья'},{level:20,icon:'♛',name:'Ферзь'},{level:25,icon:'♚',name:'Король'}];
+
+function petStage(level=S.pet.level){
+  let stage=PET_FORMS[0];for(const form of PET_FORMS){if(level>=form.level)stage=form}return stage
+}
 function initPet(){
- if(!S.pet||typeof S.pet!=='object')S.pet={name:'Пушистик',level:1,xp:0,lastDate:'',done:[]};
- S.pet.name=S.pet.name||'Пушистик';S.pet.level=Math.max(1,Number(S.pet.level)||1);S.pet.xp=Math.max(0,Number(S.pet.xp)||0);
- const todayKey=fmt(today());
- if(S.pet.lastDate!==todayKey){S.pet.lastDate=todayKey;S.pet.done=[];save();}
- if(!Array.isArray(S.pet.done))S.pet.done=[];
+  if(!S.pet||typeof S.pet!=='object')S.pet={name:'Пешка',level:1,xp:0,lastDate:'',done:[]};
+  S.pet.name=S.pet.name||'Пешка';
+  S.pet.level=Math.max(1,Number(S.pet.level)||1);
+  S.pet.xp=Math.max(0,Number(S.pet.xp)||0);
+  if(!Array.isArray(S.pet.done))S.pet.done=[];
+  const todayKey=fmt(today());
+  if(S.pet.lastDate!==todayKey){S.pet.lastDate=todayKey;S.pet.done=[];save()}
 }
 function petTask(id){
- initPet();const task=PET_TASKS.find(x=>x.id===id);if(!task||S.pet.done.includes(id))return;
- S.pet.done.push(id);S.pet.xp+=task.xp;
- while(S.pet.xp>=100){S.pet.xp-=100;S.pet.level++;note(`Уровень питомца повышен! Теперь ${S.pet.level} уровень 🎉`);}
- save();buzz('medium');render();
+  initPet();
+  const task=PET_TASKS.find(x=>x.id===id);
+  if(!task||S.pet.done.includes(id))return;
+  const oldStage=petStage(S.pet.level);
+  S.pet.done.push(id);S.pet.xp+=task.xp;
+  let levelUps=0;
+  while(S.pet.xp>=100){S.pet.xp-=100;S.pet.level++;levelUps++}
+  const newStage=petStage(S.pet.level);
+  save();buzz('medium');
+  if(newStage.level>oldStage.level)note(`🎉 ЭВОЛЮЦИЯ!\n\nТвой питомец превратился в ${newStage.name} ${newStage.icon}!\n\nУровень: ${S.pet.level}`);
+  else if(levelUps>0)note(`🎉 Новый уровень!\n\nУровень питомца: ${S.pet.level}\nФорма: ${newStage.name} ${newStage.icon}`);
+  render()
 }
 function renamePet(){ask('Имя питомца',S.pet.name,'Сохранить',v=>{v=v.trim();if(v){S.pet.name=v.slice(0,24);save();render()}},24)}
+
 function vPet(){
- initPet();const p=S.pet,form=PET_FORMS[Math.min(p.level-1,PET_FORMS.length-1)],done=PET_TASKS.filter(t=>p.done.includes(t.id)).length;
- return `<h1>Мой питомец 🐾</h1><div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="petface">${form}</div><h2>${esc(p.name)}</h2><div class="mut">Уровень ${p.level}</div><div class="petbar"><i style="width:${p.xp}%"></i></div><div class="mut">${p.xp} / 100 XP до следующего уровня</div><button class="btn ghost w" onclick="renamePet()">✏️ Изменить имя</button></div><div class="card"><h2>Забота о питомце · ${done}/${PET_TASKS.length} сегодня</h2><div class="mut" style="margin-bottom:10px">Выполняй отдельные задания, чтобы получать опыт. Достижения и привычки на питомца не влияют.</div>${PET_TASKS.map(t=>{let complete=p.done.includes(t.id);return `<div class="row"><span><b>${t.icon} ${t.name}</b><div class="mut">${t.desc} · +${t.xp} XP</div></span><button class="btn ${complete?'ghost':''}" ${complete?'disabled':''} onclick="petTask('${t.id}')">${complete?'Готово ✓':'Выполнить'}</button></div>`}).join('')}</div>`;
+  initPet();
+  const p=S.pet,stage=petStage(p.level),nextStage=PET_FORMS.find(f=>f.level>p.level),done=PET_TASKS.filter(t=>p.done.includes(t.id)).length,xpProgress=p.xp,evolutionProgress=nextStage?Math.min(100,Math.round(((p.level-stage.level+p.xp/100)/(nextStage.level-stage.level))*100)):100;
+  return `<h1>Мой питомец 🐾</h1><div class="card pet"><div class="mut">ТВОЙ СПУТНИК</div><div class="petface">${stage.icon}</div><h2>${esc(p.name)}</h2><div class="tag">${stage.name.toUpperCase()}</div><div class="mut">Уровень ${p.level}</div><div class="petbar"><i style="width:${xpProgress}%"></i></div><b>${p.xp} / 100 XP</b><div class="mut">До следующего уровня</div><button class="btn ghost w" onclick="renamePet()">✏️ Изменить имя</button></div>
+<div class="card"><h2>♟️ Эволюция питомца</h2>${PET_FORMS.map(f=>{const unlocked=p.level>=f.level,current=stage.level===f.level;return `<div class="ach ${unlocked?'':'lock'}"><div class="achico">${unlocked?f.icon:'🔒'}</div><div style="flex:1"><b>${f.name}</b><div class="mut">Уровень ${f.level}</div>${current?'<div class="tag">ТЕКУЩАЯ ФОРМА</div>':''}</div>${unlocked?'<span class="tag">ОТКРЫТО</span>':'<span class="mut">ЗАКРЫТО</span>'}</div>`}).join('')}${nextStage?`<div style="margin-top:14px"><b>Следующая эволюция</b><div class="mut">${nextStage.icon} ${nextStage.name} · уровень ${nextStage.level}</div><div class="petbar"><i style="width:${evolutionProgress}%"></i></div><div class="mut">${evolutionProgress}% до новой формы</div></div>`:`<div class="pet" style="padding:16px"><div style="font-size:35px">👑</div><b>Максимальная эволюция!</b><div class="mut">Твой питомец стал королём!</div></div>`}</div>
+<div class="card"><h2>Забота о питомце · ${done}/${PET_TASKS.length} сегодня</h2><div class="mut" style="margin-bottom:10px">Выполняй задания, получай опыт, повышай уровень и открывай новые формы!</div>${PET_TASKS.map(t=>{const complete=p.done.includes(t.id);return `<div class="row"><span><b>${t.icon} ${t.name}</b><div class="mut">${t.desc} · +${t.xp} XP</div></span><button class="btn ${complete?'ghost':''}" ${complete?'disabled':''} onclick="petTask('${t.id}')">${complete?'Готово ✓':'Выполнить'}</button></div>`}).join('')}</div>`
 }
-function vSet(){return `<h1>Настройки</h1><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length===7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div><div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватарку</button>${S.avatar?'<button class="btn ghost w" onclick="removeAvatar()">↩ Сбросить фото</button>':''}<button class="btn ghost w" onclick="rename()">✏️ Изменить имя</button></div><div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить из копии</button><button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`}
-function render(){$('#app').innerHTML={home:vHome,today:vToday,stats:vStats,week:vWeek,pet:vPet,ach:vAchievements,set:vSet}[tab]();$('#nav').innerHTML=[['home','🏠'],['today','☑️'],['stats','📊'],['week','📋'],['pet','🐾'],['ach','🏆'],['set','⚙️']].map(([t,i])=>`<button class="${t===tab?'on':''}" onclick="go('${t}')">${i}</button>`).join('')}
-function go(t){tab=t;render();scrollTo(0,0)}function pick(k,jump){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}function mo(n){calM=new Date(calM.getFullYear(),calM.getMonth()+n,1);render()}function wk(n){weekStart=add(weekStart,7*n);render()}
+
+function vSet(){
+  return `<h1>Настройки</h1><div class="card"><h2>Мои привычки</h2>${S.habits.map(h=>`<div class="row"><span>${h.emoji} ${esc(h.name)}<div class="mut">${h.days.length===7?'каждый день':h.days.map(i=>DAYS[i]).join(', ')}${h.goal>1?' · цель '+h.goal:''}</div></span><button class="ed" onclick="openEdit('${h.id}')">✏️</button></div>`).join('')||'<div class="mut">Пока пусто</div>'}</div><div class="card"><h2>Профиль</h2><button class="btn ghost w" onclick="changeAvatar()">📷 Изменить аватарку</button>${S.avatar?'<button class="btn ghost w" onclick="removeAvatar()">↩ Сбросить фото</button>':''}<button class="btn ghost w" onclick="rename()">✏️ Изменить имя</button></div><div class="card"><h2>Данные</h2><button class="btn ghost w" onclick="exportData()">Скопировать резервную копию</button><button class="btn ghost w" onclick="importData()">Восстановить из копии</button><button class="btn ghost w" onclick="resetAll()">Удалить все данные</button></div>`
+}
+
+function render(){
+  $('#app').innerHTML={home:vHome,today:vToday,stats:vStats,week:vWeek,pet:vPet,ach:vAchievements,set:vSet}[tab]();
+  $('#nav').innerHTML=[['home','🏠'],['today','☑️'],['stats','📊'],['week','📋'],['pet','🐾'],['ach','🏆'],['set','⚙️']].map(([t,i])=>`<button class="${t===tab?'on':''}" onclick="go('${t}')">${i}</button>`).join('')
+}
+function go(t){tab=t;render();scrollTo(0,0)}
+function pick(k,jump){sel=new Date(k+'T00:00:00');if(jump)tab='today';render()}
+function mo(n){calM=new Date(calM.getFullYear(),calM.getMonth()+n,1);render()}
+function wk(n){weekStart=add(weekStart,7*n);render()}
 function setMood(v){let k=fmt(today());S.mood[k]===v?delete S.mood[k]:S.mood[k]=v;save();buzz();render()}
+
 function note(t){try{if(tg&&tg.isVersionAtLeast('6.2'))return tg.showAlert(t)}catch(e){}alert(t)}
 function sure(t,cb){try{if(tg&&tg.isVersionAtLeast('6.2'))return tg.showConfirm(t,ok=>{if(ok)cb()})}catch(e){}if(confirm(t))cb()}
-function ask(title,val,okText,cb,max){let s=document.createElement('div');s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};s.innerHTML=`<div><h1 style="margin-top:0">${title}</h1><input type="text" id="ask" ${max?`maxlength="${max}"`:''} value="${esc(val)}"><button class="btn w" id="askok">${okText}</button><button class="btn ghost w" id="askno">Отмена</button></div>`;document.body.appendChild(s);let i=s.querySelector('#ask');s.querySelector('#askno').onclick=()=>s.remove();s.querySelector('#askok').onclick=()=>{let v=i.value;s.remove();cb(v)};setTimeout(()=>{try{i.focus();i.select()}catch(e){}},50)}
+function ask(title,val,okText,cb,max){
+  let s=document.createElement('div');s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};
+  s.innerHTML=`<div><h1 style="margin-top:0">${title}</h1><input type="text" id="ask" ${max?`maxlength="${max}"`:''} value="${esc(val)}"><button class="btn w" id="askok">${okText}</button><button class="btn ghost w" id="askno">Отмена</button></div>`;
+  document.body.appendChild(s);
+  let i=s.querySelector('#ask');
+  s.querySelector('#askno').onclick=()=>s.remove();
+  s.querySelector('#askok').onclick=()=>{let v=i.value;s.remove();cb(v)};
+  setTimeout(()=>{try{i.focus();i.select()}catch(e){}},50)
+}
 function rename(){ask('Ваше имя',S.name||(tg?.initDataUnsafe?.user?.first_name||''),'Сохранить',v=>{S.name=v.trim();save();render()},30)}
-function exportData(){let v=JSON.stringify(S);let p;try{p=navigator.clipboard.writeText(v)}catch(e){p=Promise.reject()}p.then(()=>note('Копия в буфере обмена')).catch(()=>ask('Выделите и скопируйте текст',v,'Закрыть',()=>{}))}
-function importData(){ask('Вставьте резервную копию','','Восстановить',v=>{if(!v)return;try{S=Object.assign({habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пушистик',level:1,xp:0,lastDate:'',done:[]}},JSON.parse(v));initPet();save();render()}catch(e){note('Не удалось прочитать копию')}})}
-function resetAll(){sure('Удалить все привычки и историю?',()=>{S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пушистик',level:1,xp:0,lastDate:'',done:[]}};save();render()})}
-function openEdit(id){let old=S.habits.find(h=>h.id===id),d=old?{...old,days:[...old.days]}:{emoji:'⭐',name:'',color:COLORS[0],days:[0,1,2,3,4,5,6],goal:1},s=document.createElement('div');s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};const paint=()=>{s.innerHTML=`<div><h1 style="margin-top:0">${old?'Изменить привычку':'Новая привычка'}</h1>${old?'':`<div class="pre">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]} ${p[1]}</button>`).join('')}</div>`}<input type="text" id="nm" maxlength="30" placeholder="Название" value="${esc(d.name)}"><input type="text" id="em" maxlength="4" placeholder="Эмодзи" value="${esc(d.emoji)}"><div class="pre">${COLORS.map(c=>`<button class="sw ${c===d.color?'on':''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div><h2>Повторять</h2><div class="pre">${DAYS.map((n,i)=>`<button class="${d.days.includes(i)?'on':''}" data-d="${i}">${n}</button>`).join('')}</div><h2>Раз в день</h2><div class="step"><button data-g="-1">−</button><b>${d.goal}</b><button data-g="1">+</button></div><div id="err" style="color:#d33;min-height:20px;font-size:14px"></div><button class="btn w" id="ok">Сохранить</button>${old?'<button class="btn ghost w" id="rm">Удалить привычку</button>':''}</div>`;const keep=()=>{d.name=$('#nm').value;d.emoji=$('#em').value||'⭐'};s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{let p=PRESETS[b.dataset.p];d.emoji=p[0];d.name=p[1];d.goal=p[2];paint()});s.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{keep();d.color=b.dataset.c;paint()});s.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{keep();let i=+b.dataset.d;d.days=d.days.includes(i)?d.days.filter(x=>x!==i):[...d.days,i].sort();paint()});s.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{keep();d.goal=Math.min(99,Math.max(1,d.goal+ +b.dataset.g));paint()});$('#ok').onclick=()=>{keep();d.name=d.name.trim();if(!d.name)return $('#err').textContent='Введите название привычки';if(!d.days.length)return $('#err').textContent='Выберите хотя бы один день';if(old)Object.assign(old,d);else S.habits.push({...d,id:'h'+Date.now()});s.remove();save();render()};if(old)$('#rm').onclick=()=>sure('Удалить привычку и её историю?',()=>{S.habits=S.habits.filter(h=>h.id!==id);Object.keys(S.log).forEach(k=>setCnt(k,id,0));save();s.remove();render()})};document.body.appendChild(s);paint()}
+function exportData(){
+  let v=JSON.stringify(S),p;
+  try{p=navigator.clipboard.writeText(v)}catch(e){p=Promise.reject()}
+  p.then(()=>note('Копия в буфере обмена')).catch(()=>ask('Выделите и скопируйте текст',v,'Закрыть',()=>{}))
+}
+function importData(){
+  ask('Вставьте резервную копию','','Восстановить',v=>{
+    if(!v)return;
+    try{
+      S=Object.assign({habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}},JSON.parse(v));
+      initPet();save();render()
+    }catch(e){note('Не удалось прочитать копию')}
+  })
+}
+function resetAll(){
+  sure('Удалить все привычки и историю?',()=>{
+    S={habits:[],log:{},mood:{},name:'',avatar:'',pet:{name:'Пешка',level:1,xp:0,lastDate:'',done:[]}};
+    save();render()
+  })
+}
 
-// Проверка подписки на сервере перед входом в приложение.
-let accessTimer=null, accessBusy=false;
-function showGate(message){
-  $('#app').style.display='none';$('#nav').style.display='none';$('#gate').style.display='flex';
-  $('#gateText').textContent=message||'Подпишись на канал, чтобы открыть трекер.';
+function openEdit(id){
+  let old=S.habits.find(h=>h.id===id),d=old?{...old,days:[...old.days]}:{emoji:'⭐',name:'',color:COLORS[0],days:[0,1,2,3,4,5,6],goal:1},s=document.createElement('div');
+  s.className='sheet';s.onclick=e=>{if(e.target===s)s.remove()};
+  const paint=()=>{
+    s.innerHTML=`<div><h1 style="margin-top:0">${old?'Изменить привычку':'Новая привычка'}</h1>${old?'':`<div class="pre">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]} ${p[1]}</button>`).join('')}</div>`}<input type="text" id="nm" maxlength="30" placeholder="Название" value="${esc(d.name)}"><input type="text" id="em" maxlength="4" placeholder="Эмодзи" value="${esc(d.emoji)}"><div class="pre">${COLORS.map(c=>`<button class="sw ${c===d.color?'on':''}" data-c="${c}" style="background:${c}"></button>`).join('')}</div><h2>Повторять</h2><div class="pre">${DAYS.map((n,i)=>`<button class="${d.days.includes(i)?'on':''}" data-d="${i}">${n}</button>`).join('')}</div><h2>Раз в день</h2><div class="step"><button data-g="-1">−</button><b>${d.goal}</b><button data-g="1">+</button></div><div id="err" style="color:#d33;min-height:20px;font-size:14px"></div><button class="btn w" id="ok">Сохранить</button>${old?'<button class="btn ghost w" id="rm">Удалить привычку</button>':''}</div>`;
+    const keep=()=>{d.name=$('#nm').value;d.emoji=$('#em').value||'⭐'};
+    s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{let p=PRESETS[b.dataset.p];d.emoji=p[0];d.name=p[1];d.goal=p[2];paint()});
+    s.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{keep();d.color=b.dataset.c;paint()});
+    s.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{keep();let i=+b.dataset.d;d.days=d.days.includes(i)?d.days.filter(x=>x!==i):[...d.days,i].sort();paint()});
+    s.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{keep();d.goal=Math.min(99,Math.max(1,d.goal+ +b.dataset.g));paint()});
+    $('#ok').onclick=()=>{
+      keep();d.name=d.name.trim();
+      if(!d.name)return $('#err').textContent='Введите название привычки';
+      if(!d.days.length)return $('#err').textContent='Выберите хотя бы один день';
+      if(old)Object.assign(old,d);else S.habits.push({...d,id:'h'+Date.now()});
+      s.remove();save();render()
+    };
+    if(old)$('#rm').onclick=()=>sure('Удалить привычку и её историю?',()=>{
+      S.habits=S.habits.filter(h=>h.id!==id);
+      Object.keys(S.log).forEach(k=>setCnt(k,id,0));
+      save();s.remove();render()
+    })
+  };
+  document.body.appendChild(s);paint()
+}
+
+// Начальный экран показывается при каждом новом запуске.
+function showGate(){
+  $('#app').style.display='none';
+  $('#nav').style.display='none';
+  $('#adBanner').style.display='none';
+  $('#gate').style.display='flex'
 }
 function showApp(){
-  $('#gate').style.display='none';$('#app').style.display='block';$('#nav').style.display='flex';
-  if(!window.__appLoaded){window.__appLoaded=true;load(()=>{initPet();render()})}
+  $('#gate').style.display='none';
+  $('#app').style.display='block';
+  $('#nav').style.display='flex';
+  $('#adBanner').style.display='block';
+  if(!window.__appLoaded){
+    window.__appLoaded=true;
+    load(()=>{initPet();render()})
+  }
 }
-async function checkSubscription(){
-  if(accessBusy)return;accessBusy=true;
-  const btn=$('#checkSub');if(btn)btn.disabled=true;
-  try{
-    const initData=window.Telegram?.WebApp?.initData||'';
-    if(!initData){showGate('Открой приложение через Telegram, чтобы мы могли проверить подписку.');return}
-    const response=await fetch('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData})});
-    const result=await response.json().catch(()=>({}));
-    if(response.ok&&result.ok&&result.subscribed){showApp();}
-    else if(response.status===401){showGate('Не удалось подтвердить запуск через Telegram. Закрой и снова открой приложение из Telegram.');}
-    else if(result.subscribed===false){showGate('Ты не подписан(а) на @focus_iron. Подпишись и нажми «Проверить подписку».');}
-    else{showGate('Не удалось проверить подписку. Попробуй ещё раз чуть позже.');}
-  }catch(e){showGate('Нет связи с сервером проверки. Попробуй ещё раз.');}
-  finally{accessBusy=false;if(btn)btn.disabled=false;}
-}
-$('#checkSub').addEventListener('click',checkSubscription);
-checkSubscription();
-accessTimer=setInterval(checkSubscription,45000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSubscription()});
+$('#continueBtn').addEventListener('click',showApp);
+showGate();
 </script>
 </body>
 </html>
